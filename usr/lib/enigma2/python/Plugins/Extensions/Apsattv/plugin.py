@@ -8,7 +8,7 @@
 #   But no delete this message & support on forum linuxsat-support     #
 # ######################################################################
 from __future__ import print_function
-from . import _, isDreamOS, paypal
+from . import _, isDreamOS, paypal, host22
 from . import Utils
 from . import html_conv
 from Components.AVSwitch import AVSwitch
@@ -21,7 +21,6 @@ from Components.MultiContent import MultiContentEntryPixmapAlphaTest
 from Components.Pixmap import Pixmap
 from Components.ServiceEventTracker import ServiceEventTracker, InfoBarBase
 from Plugins.Plugin import PluginDescriptor
-# from Screens.InfoBar import MoviePlayer
 from Screens.InfoBarGenerics import InfoBarSubtitleSupport, InfoBarMenu
 from Screens.InfoBarGenerics import InfoBarSeek, InfoBarAudioSelection
 from Screens.InfoBarGenerics import InfoBarNotifications
@@ -51,27 +50,20 @@ if PY3:
 else:
     from urllib2 import urlopen, Request
 
-# if sys.version_info.major == 3:
-    # import urllib.request as urllib2
-# elif sys.version_info.major == 2:
-    # import urllib2
-
 global skin_path, search, downloadm3u
 currversion = '1.0'
 name_plugin = 'Apsattv Plugin'
-desc_plugin = ('..:: Apsattv International Channel List V. %s ::.. ' % currversion)
+desc_plugin = ('..:: Apsat Tv International Channel List V. %s ::.. ' % currversion)
 PLUGIN_PATH = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('Apsattv'))
 res_plugin_path = os.path.join(PLUGIN_PATH, 'skin')
 _firstStartfh = True
 search = False
-host22 = 'aHR0cDovL3d3dy5hcHNhdHR2LmNvbS9zdHJlYW1zLmh0bWw='
 downloadm3u = '/media/hdd/movie/'
 skin_path = res_plugin_path + '/hd'
 
 if Utils.isFHD():
     skin_path = res_plugin_path + '/fhd'
 
-# if Utils.DreamOS():
 if isDreamOS:
     skin_path = skin_path + '/dreamOs'
 
@@ -222,14 +214,6 @@ def returnIMDB(text_clear):
         text_clear = html_conv.html_unescape(text_clear)
         _session.open(MessageBox, text_clear, MessageBox.TYPE_INFO)
         return True
-
-
-# def paypal():
-    # conthelp = "If you like what I do you\n"
-    # conthelp += "can contribute with a coffee\n"
-    # conthelp += "scan the qr code and donate € 1.00"
-    # return conthelp
-
 
 Panel_list = [('PLAYLISTS ONLINE')]
 

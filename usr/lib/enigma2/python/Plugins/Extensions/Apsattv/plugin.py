@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# 01/06/2023 init
+# 03/06/2023 init
 # ######################################################################
 #   Enigma2 plugin Apsattv is coded by Lululla                         #
 #   This is free software; you can redistribute it and/or modify it.   #
@@ -344,6 +344,7 @@ class selectplay(Screen):
         self["paypal"] = Label()
         self['key_red'] = Label(_('Exit'))
         self['key_green'] = Label(_('Search'))
+        self['key_blue'] = Label(_('Export'))
         self['title'] = Label("Thank's Apsattv")
         self['category'] = Label('')
         self['category'].setText(namex)
@@ -357,6 +358,7 @@ class selectplay(Screen):
                                                            'right': self.right,
                                                            'ok': self.ok,
                                                            'green': self.search_text,
+                                                           'blue': self.maincnv,
                                                            'cancel': self.returnback,
                                                            'red': self.returnback}, -1)
 
@@ -367,6 +369,15 @@ class selectplay(Screen):
         payp = paypal()
         self["paypal"].setText(payp)
         return
+
+    def maincnv(self):
+        try:
+            name = self['menulist'].getCurrent()[0][0]
+            url = self['menulist'].getCurrent()[0][1]
+            conv = main2(self.session, name, url)
+            conv.message2()
+        except:
+            pass
 
     def search_text(self):
         from Screens.VirtualKeyBoard import VirtualKeyBoard
@@ -389,7 +400,6 @@ class selectplay(Screen):
                             content = content.decode("utf-8")
                         except Exception as e:
                             print("Error: %s." % str(e))
-                    # print("In showContent content =", content)
                     regexcat = 'https://www.apsattv.com/(.+?).m3u<'
                     match = re.compile(regexcat, re.DOTALL).findall(content)
                     for name in match:
@@ -426,7 +436,6 @@ class selectplay(Screen):
     def updateMenuList(self):
         self.menu_list = []
         items = []
-        # if Utils.check(self.url):
         try:
             req = Request(self.url)
             req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
@@ -500,11 +509,13 @@ class main2(Screen):
         self.loading = 0
         self.name = namex
         self.url = lnk
+        self.search = ''
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
         self['menulist'] = free2list([])
         self["paypal"] = Label()
         self['key_red'] = Label(_('Back'))
-        self['key_green'] = Label(_('Export'))
+        self['key_green'] = Label(_('Search'))
+        self['key_blue'] = Label(_('Export'))
         self['category'] = Label('')
         self['category'].setText(namex)
         self['title'] = Label("Thank's Apsattv")
@@ -517,9 +528,10 @@ class main2(Screen):
                                                            'left': self.left,
                                                            'right': self.right,
                                                            'ok': self.ok,
-                                                           'green': self.message2,
-                                                           'cancel': self.close,
-                                                           'red': self.close}, -1)
+                                                           'blue': self.message2,
+                                                           'green': self.search_text,
+                                                           'cancel': self.closex,
+                                                           'red': self.closex}, -1)
         self.timer = eTimer()
         if Utils.DreamOS():
             self.timer_conn = self.timer.timeout.connect(self.updateMenuList)
@@ -533,11 +545,73 @@ class main2(Screen):
         self["paypal"].setText(payp)
         self.setTitle(self.setup_title)
 
+    def search_text(self):
+        global search
+        if search is True:
+            search = False
+        self.session.openWithCallback(self.filterChannels, VirtualKeyBoard, title=_("Filter this category..."), text=self.search)
+
+    def filterChannels(self, result):
+        if result:
+            i = len(self.menu_list)
+            del self.menu_list[0:i]
+            self.menu_list = []
+            items = []
+            pic = os.path.join(res_plugin_path, 'pic/tv.png')
+            try:
+                req = Request(self.url)
+                req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
+                r = urlopen(req, None, 15)
+                content = r.read()
+                r.close()
+                if str(type(content)).find('bytes') != -1:
+                    try:
+                        content = content.decode("utf-8")
+                    except Exception as e:
+                        print("Error: %s." % str(e))
+                regexcat = '#EXTINF.*?,(.*?)\\n(.*?)\\n'
+                match = re.compile(regexcat, re.DOTALL).findall(content)
+                for name, url in match:
+                    if str(result).lower() in name.lower():
+                        global search
+                        search = True
+                        name = name.capitalize()
+                        url = url.replace(' ', '')
+                        url = url.replace('\\n', '')
+                        pic = pic
+                        item = name + "###" + url + '\n'
+                        if item not in items:
+                            items.append(item)
+                items.sort()
+                for item in items:
+                    name = item.split("###")[0]
+                    url = item.split("###")[1]
+                    name = name.capitalize()
+                    self.menu_list.append(show_(name, url))
+                    self['menulist'].l.setList(self.menu_list)
+                auswahl = self['menulist'].getCurrent()[0][0]
+                self['name'].setText(str(auswahl))
+            except Exception as e:
+                print('error ', str(e))
+        else:
+            self.resetSearch()
+
+    def closex(self):
+        if search == True:
+            self.resetSearch()
+        else:
+            self.close()
+
+    def resetSearch(self):
+        global search
+        search = False
+        del self.menu_list
+        self.updateMenuList()
+
     def updateMenuList(self):
         self.menu_list = []
         items = []
         pic = os.path.join(res_plugin_path, 'pic/tv.png')
-        # if Utils.check(self.url):
         try:
             req = Request(self.url)
             req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
@@ -619,7 +693,6 @@ class main2(Screen):
             self.convert_bouquet(url, name)
 
     def convert_bouquet(self, url, namex):
-        # if Utils.check(url):
         type = 'tv'
         if "radio" in namex.lower():
             type = "radio"
@@ -808,11 +881,11 @@ class Playstream2(
 
     def __init__(self, session, name, url):
         global streaml
-        global _session
+        # global _session
         Screen.__init__(self, session)
         self.session = session
         self.skinName = 'MoviePlayer'
-        _session = session
+        # _session = session
         streaml = False
         for x in InfoBarBase, \
                 InfoBarMenu, \

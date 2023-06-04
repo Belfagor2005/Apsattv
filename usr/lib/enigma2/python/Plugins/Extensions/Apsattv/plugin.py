@@ -67,6 +67,18 @@ if Utils.isFHD():
 if isDreamOS:
     skin_path = skin_path + '/dreamOs'
 
+
+def mountipkpth():
+    ipkpth = []
+    if os.path.isfile('/proc/mounts'):
+        for line in open('/proc/mounts'):
+            if '/dev/sd' in line or '/dev/disk/by-uuid/' in line or '/dev/mmc' in line or '/dev/mtdblock' in line:
+                drive = line.split()[1].replace('\\040', ' ') + '/'
+                if drive not in ipkpth:
+                    ipkpth.append(drive)
+    ipkpth.append('/tmp')
+    return ipkpth
+
 try:
     from Components.UsageConfig import defaultMoviePath
     downloadm3u = defaultMoviePath()
@@ -702,10 +714,13 @@ class main2(Screen):
         cleanName = re.sub(r'\d+:\d+:[\d.]+', '_', cleanName)
         name_file = re.sub(r'_+', '_', cleanName)
         name_file = name_file.lower()
-        if os.path.exists(downloadm3u):
-            xxxname = downloadm3u + name_file + '.m3u'
-        else:
-            xxxname = '/tmp/' + name_file + '.m3u'
+        
+        # downloadm3u = mountipkpth()
+        xxxname = '/tmp/' + name_file + '.m3u'
+        # if os.path.exists(downloadm3u):
+            # xxxname = downloadm3u + name_file + '.m3u'
+        # else:
+            # xxxname = '/tmp/' + name_file + '.m3u'
         # print('path m3u: ', xxxname)
         req = Request(url)
         req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
@@ -881,11 +896,9 @@ class Playstream2(
 
     def __init__(self, session, name, url):
         global streaml
-        # global _session
         Screen.__init__(self, session)
         self.session = session
         self.skinName = 'MoviePlayer'
-        # _session = session
         streaml = False
         for x in InfoBarBase, \
                 InfoBarMenu, \

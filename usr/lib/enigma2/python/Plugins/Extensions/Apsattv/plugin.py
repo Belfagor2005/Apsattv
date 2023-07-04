@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''
+****************************************
+*        coded by Lululla              *
+*             02/07/2023               *
+*       skin by MMark                  *
+****************************************
+Info http://t.me/tivustream
+'''
 # 03/06/2023 init
 # ######################################################################
 #   Enigma2 plugin Apsattv is coded by Lululla                         #
@@ -32,9 +40,10 @@ from Screens.VirtualKeyBoard import VirtualKeyBoard
 from enigma import RT_VALIGN_CENTER
 from enigma import RT_HALIGN_LEFT
 from enigma import eListboxPythonMultiContent
-from enigma import ePicLoad, loadPNG, gFont
+from enigma import loadPNG, gFont #  ePicLoad
 from enigma import eServiceReference
 from enigma import eTimer
+from enigma import getDesktop
 from enigma import iPlayableService
 import os
 import re
@@ -59,25 +68,37 @@ res_plugin_path = os.path.join(PLUGIN_PATH, 'skin')
 _firstStartfh = True
 search = False
 downloadm3u = '/media/hdd/movie/'
-skin_path = res_plugin_path + '/hd'
+Panel_list = [('PLAYLISTS ONLINE')]
+screenwidth = getDesktop(0).size()
+if screenwidth.width() == 2560:
+    skin_path = PLUGIN_PATH + '/skin/uhd'
+elif screenwidth.width() == 1920:
+    skin_path = PLUGIN_PATH + '/skin//fhd'
+else:
+    skin_path = PLUGIN_PATH + '/skin//hd'
 
-if Utils.isFHD():
-    skin_path = res_plugin_path + '/fhd'
-
-if isDreamOS:
+if os.path.exists('/var/lib/dpkg/info'):
     skin_path = skin_path + '/dreamOs'
 
 
-def mountipkpth():
-    ipkpth = []
-    if os.path.isfile('/proc/mounts'):
-        for line in open('/proc/mounts'):
-            if '/dev/sd' in line or '/dev/disk/by-uuid/' in line or '/dev/mmc' in line or '/dev/mtdblock' in line:
-                drive = line.split()[1].replace('\\040', ' ') + '/'
-                if drive not in ipkpth:
-                    ipkpth.append(drive)
-    ipkpth.append('/tmp')
-    return ipkpth
+# def paypal():
+    # conthelp = "If you like what I do you\n"
+    # conthelp += "can contribute with a coffee\n"
+    # conthelp += "scan the qr code and donate € 1.00"
+    # return conthelp
+
+
+# def mountipkpth():
+    # ipkpth = []
+    # if os.path.isfile('/proc/mounts'):
+        # for line in open('/proc/mounts'):
+            # if '/dev/sd' in line or '/dev/disk/by-uuid/' in line or '/dev/mmc' in line or '/dev/mtdblock' in line:
+                # drive = line.split()[1].replace('\\040', ' ') + '/'
+                # if drive not in ipkpth:
+                    # ipkpth.append(drive)
+    # ipkpth.append('/tmp')
+    # return ipkpth
+
 
 try:
     from Components.UsageConfig import defaultMoviePath
@@ -181,7 +202,11 @@ def pngassign(name):
 class free2list(MenuList):
     def __init__(self, list):
         MenuList.__init__(self, list, True, eListboxPythonMultiContent)
-        if Utils.isFHD():
+        if screenwidth.width() == 2560:
+            self.l.setItemHeight(60)
+            textfont = int(42)
+            self.l.setFont(0, gFont('Regular', textfont))
+        elif screenwidth.width() == 1920:
             self.l.setItemHeight(50)
             textfont = int(30)
             self.l.setFont(0, gFont('Regular', textfont))
@@ -194,7 +219,10 @@ class free2list(MenuList):
 def show_(name, link):
     res = [(name, link)]
     png = pngassign(name)
-    if Utils.isFHD():
+    if screenwidth.width() == 2560:
+        res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 5), size=(70, 56), png=loadPNG(png)))
+        res.append(MultiContentEntryText(pos=(90, 0), size=(1200, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+    elif screenwidth.width() == 1920:
         res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 5), size=(54, 40), png=loadPNG(png)))
         res.append(MultiContentEntryText(pos=(70, 0), size=(1000, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
     else:
@@ -227,8 +255,6 @@ def returnIMDB(text_clear):
         _session.open(MessageBox, text_clear, MessageBox.TYPE_INFO)
         return True
 
-Panel_list = [('PLAYLISTS ONLINE')]
-
 
 class Apsattv(Screen):
     def __init__(self, session):
@@ -247,8 +273,8 @@ class Apsattv(Screen):
         self['title'] = Label("Thank's Apsattv")
         self['name'] = Label('')
         self["paypal"] = Label()
-        self.picload = ePicLoad()
-        self.picfile = ''
+        # self.picload = ePicLoad()
+        # self.picfile = ''
         self.currentList = 'menulist'
         self.menulist = []
         self.loading_ok = False
@@ -257,7 +283,7 @@ class Apsattv(Screen):
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
         self['actions'] = ActionMap(['OkCancelActions',
                                      'ColorActions',
-                                     'ButtonSetupActions',
+                                     # 'ButtonSetupActions',
                                      'DirectionActions'], {'up': self.up,
                                                            'down': self.down,
                                                            'left': self.left,
@@ -311,24 +337,35 @@ class Apsattv(Screen):
             self.session.open(selectplay, namex, lnk)
 
     def up(self):
-        self[self.currentList].up()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].up()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def down(self):
-        self[self.currentList].down()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+   
+            self[self.currentList].down()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def left(self):
-        self[self.currentList].pageUp()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
-
+    
+            self[self.currentList].pageUp()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
     def right(self):
-        self[self.currentList].pageDown()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].pageDown()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def exit(self):
         self.close()
@@ -348,8 +385,8 @@ class selectplay(Screen):
         self.name = namex
         self.url = lnk
         self.search = ''
-        self.picload = ePicLoad()
-        self.picfile = ''
+        # self.picload = ePicLoad()
+        # self.picfile = ''
         self.currentList = 'menulist'
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
         self['menulist'] = free2list([])
@@ -363,7 +400,7 @@ class selectplay(Screen):
         self['name'] = Label('')
         self['actions'] = ActionMap(['OkCancelActions',
                                      'ColorActions',
-                                     'ButtonSetupActions',
+                                     # 'ButtonSetupActions',
                                      'DirectionActions'], {'up': self.up,
                                                            'down': self.down,
                                                            'left': self.left,
@@ -380,7 +417,6 @@ class selectplay(Screen):
     def layoutFinished(self):
         payp = paypal()
         self["paypal"].setText(payp)
-        return
 
     def maincnv(self):
         try:
@@ -484,24 +520,36 @@ class selectplay(Screen):
         self.session.open(main2, name, url)
 
     def up(self):
-        self[self.currentList].up()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
-
+        try:
+            self[self.currentList].up()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
+            
     def down(self):
-        self[self.currentList].down()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].down()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def left(self):
-        self[self.currentList].pageUp()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].pageUp()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def right(self):
-        self[self.currentList].pageDown()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].pageDown()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
 
 class main2(Screen):
@@ -513,8 +561,8 @@ class main2(Screen):
         with open(skin, 'r') as f:
             self.skin = f.read()
         self.menulist = []
-        self.picload = ePicLoad()
-        self.picfile = ''
+        # self.picload = ePicLoad()
+        # self.picfile = ''
         self.currentList = 'menulist'
         self.loading_ok = False
         self.count = 0
@@ -545,7 +593,7 @@ class main2(Screen):
                                                            'cancel': self.closex,
                                                            'red': self.closex}, -1)
         self.timer = eTimer()
-        if Utils.DreamOS():
+        if os.path.exists('/var/lib/dpkg/info'):
             self.timer_conn = self.timer.timeout.connect(self.updateMenuList)
         else:
             self.timer.callback.append(self.updateMenuList)
@@ -609,7 +657,7 @@ class main2(Screen):
             self.resetSearch()
 
     def closex(self):
-        if search == True:
+        if search is True:
             self.resetSearch()
         else:
             self.close()
@@ -677,24 +725,36 @@ class main2(Screen):
         self.session.open(Playstream2, name, url)
 
     def up(self):
-        self[self.currentList].up()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
-
+        try:
+            self[self.currentList].up()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
+            
     def down(self):
-        self[self.currentList].down()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].down()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def left(self):
-        self[self.currentList].pageUp()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].pageUp()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def right(self):
-        self[self.currentList].pageDown()
-        auswahl = self['menulist'].getCurrent()[0][0]
-        self['name'].setText(str(auswahl))
+        try:
+            self[self.currentList].pageDown()
+            auswahl = self['menulist'].getCurrent()[0][0]
+            self['name'].setText(str(auswahl))
+        except Exception as e:
+            print(e)
 
     def message2(self, answer=None):
         if answer is None:
@@ -714,7 +774,6 @@ class main2(Screen):
         cleanName = re.sub(r'\d+:\d+:[\d.]+', '_', cleanName)
         name_file = re.sub(r'_+', '_', cleanName)
         name_file = name_file.lower()
-        
         # downloadm3u = mountipkpth()
         xxxname = '/tmp/' + name_file + '.m3u'
         # if os.path.exists(downloadm3u):

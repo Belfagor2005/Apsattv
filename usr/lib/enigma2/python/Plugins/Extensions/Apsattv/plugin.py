@@ -40,7 +40,7 @@ from Screens.VirtualKeyBoard import VirtualKeyBoard
 from enigma import RT_VALIGN_CENTER
 from enigma import RT_HALIGN_LEFT
 from enigma import eListboxPythonMultiContent
-from enigma import loadPNG, gFont #  ePicLoad
+from enigma import loadPNG, gFont  # ePicLoad
 from enigma import eServiceReference
 from enigma import eTimer
 from enigma import getDesktop
@@ -79,25 +79,6 @@ else:
 
 if os.path.exists('/var/lib/dpkg/info'):
     skin_path = skin_path + '/dreamOs'
-
-
-# def paypal():
-    # conthelp = "If you like what I do you\n"
-    # conthelp += "can contribute with a coffee\n"
-    # conthelp += "scan the qr code and donate € 1.00"
-    # return conthelp
-
-
-# def mountipkpth():
-    # ipkpth = []
-    # if os.path.isfile('/proc/mounts'):
-        # for line in open('/proc/mounts'):
-            # if '/dev/sd' in line or '/dev/disk/by-uuid/' in line or '/dev/mmc' in line or '/dev/mtdblock' in line:
-                # drive = line.split()[1].replace('\\040', ' ') + '/'
-                # if drive not in ipkpth:
-                    # ipkpth.append(drive)
-    # ipkpth.append('/tmp')
-    # return ipkpth
 
 
 try:
@@ -254,6 +235,7 @@ def returnIMDB(text_clear):
         text_clear = html_conv.html_unescape(text_clear)
         _session.open(MessageBox, text_clear, MessageBox.TYPE_INFO)
         return True
+    return False
 
 
 class Apsattv(Screen):
@@ -345,7 +327,7 @@ class Apsattv(Screen):
             print(e)
 
     def down(self):
-   
+        try:
             self[self.currentList].down()
             auswahl = self['menulist'].getCurrent()[0][0]
             self['name'].setText(str(auswahl))
@@ -353,12 +335,13 @@ class Apsattv(Screen):
             print(e)
 
     def left(self):
-    
+        try:
             self[self.currentList].pageUp()
             auswahl = self['menulist'].getCurrent()[0][0]
             self['name'].setText(str(auswahl))
         except Exception as e:
             print(e)
+
     def right(self):
         try:
             self[self.currentList].pageDown()
@@ -526,7 +509,7 @@ class selectplay(Screen):
             self['name'].setText(str(auswahl))
         except Exception as e:
             print(e)
-            
+
     def down(self):
         try:
             self[self.currentList].down()
@@ -731,7 +714,7 @@ class main2(Screen):
             self['name'].setText(str(auswahl))
         except Exception as e:
             print(e)
-            
+
     def down(self):
         try:
             self[self.currentList].down()

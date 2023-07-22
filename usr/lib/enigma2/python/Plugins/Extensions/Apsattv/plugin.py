@@ -60,7 +60,7 @@ else:
     from urllib2 import urlopen, Request
 
 global skin_path, search, downloadm3u
-currversion = '1.0'
+currversion = '1.1'
 name_plugin = 'Apsattv Plugin'
 desc_plugin = ('..:: Apsat Tv International Channel List V. %s ::.. ' % currversion)
 PLUGIN_PATH = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('Apsattv'))

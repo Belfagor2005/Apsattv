@@ -16,7 +16,7 @@ Info http://t.me/tivustream
 #   But no delete this message & support on forum linuxsat-support     #
 # ######################################################################
 from __future__ import print_function
-from . import _, isDreamOS, paypal, host22
+from . import _, paypal, host22
 from . import Utils
 from . import html_conv
 from Components.AVSwitch import AVSwitch
@@ -73,9 +73,9 @@ screenwidth = getDesktop(0).size()
 if screenwidth.width() == 2560:
     skin_path = PLUGIN_PATH + '/skin/uhd'
 elif screenwidth.width() == 1920:
-    skin_path = PLUGIN_PATH + '/skin//fhd'
+    skin_path = PLUGIN_PATH + '/skin/fhd'
 else:
-    skin_path = PLUGIN_PATH + '/skin//hd'
+    skin_path = PLUGIN_PATH + '/skin/hd'
 
 if os.path.exists('/var/lib/dpkg/info'):
     skin_path = skin_path + '/dreamOs'
@@ -251,6 +251,7 @@ class Apsattv(Screen):
         self['menulist'] = free2list([])
         self['key_red'] = Label(_('Exit'))
         self['key_green'] = Label('Select')
+        self['key_blue'] = Label()
         self['category'] = Label("Plugins Channels Free by Lululla")
         self['title'] = Label("Thank's Apsattv")
         self['name'] = Label('')

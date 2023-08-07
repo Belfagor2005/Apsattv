@@ -19,7 +19,10 @@ from __future__ import print_function
 from . import _, paypal, host22
 from . import Utils
 from . import html_conv
-from Components.AVSwitch import AVSwitch
+try:
+    from Components.AVSwitch import eAVSwitch
+except Exception:
+    from Components.AVSwitch import iAVSwitch as eAVSwitch
 from Components.ActionMap import ActionMap
 from Components.config import config
 from Components.Label import Label
@@ -201,10 +204,10 @@ def show_(name, link):
     res = [(name, link)]
     png = pngassign(name)
     if screenwidth.width() == 2560:
-        res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 5), size=(70, 56), png=loadPNG(png)))
+        res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 2), size=(70, 56), png=loadPNG(png)))
         res.append(MultiContentEntryText(pos=(90, 0), size=(1200, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
     elif screenwidth.width() == 1920:
-        res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 5), size=(54, 40), png=loadPNG(png)))
+        res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 2), size=(54, 40), png=loadPNG(png)))
         res.append(MultiContentEntryText(pos=(70, 0), size=(1000, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
     else:
         res.append(MultiContentEntryPixmapAlphaTest(pos=(3, 10), size=(54, 40), png=loadPNG(png)))

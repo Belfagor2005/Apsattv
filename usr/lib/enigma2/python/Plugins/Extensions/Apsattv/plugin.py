@@ -4,7 +4,7 @@
 '''
 ****************************************
 *        coded by Lululla              *
-*             02/07/2023               *
+*             30/08/2023               *
 *       skin by MMark                  *
 ****************************************
 Info http://t.me/tivustream
@@ -19,6 +19,7 @@ from __future__ import print_function
 from . import _, paypal, host22
 from . import Utils
 from . import html_conv
+from . import cvbq
 try:
     from Components.AVSwitch import eAVSwitch
 except Exception:
@@ -427,9 +428,8 @@ class selectplay(Screen):
                     req = Request(self.url)
                     req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
                     r = urlopen(req, None, 15)
-                    link = r.read()
+                    content = r.read()
                     r.close()
-                    content = link
                     if str(type(content)).find('bytes') != -1:
                         try:
                             content = content.decode("utf-8")
@@ -475,9 +475,8 @@ class selectplay(Screen):
             req = Request(self.url)
             req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
             r = urlopen(req, None, 15)
-            link = r.read()
+            content = r.read()
             r.close()
-            content = link
             if str(type(content)).find('bytes') != -1:
                 try:
                     content = content.decode("utf-8")
@@ -749,86 +748,12 @@ class main2(Screen):
         elif answer:
             name = self.name
             url = self.url
-            self.convert_bouquet(url, name)
-
-    def convert_bouquet(self, url, namex):
-        type = 'tv'
-        if "radio" in namex.lower():
-            type = "radio"
-        name_file = namex.replace('/', '_').replace(',', '').replace(' ', '-')
-        cleanName = re.sub(r'[\<\>\:\"\/\\\|\?\*]', '_', str(name_file))
-        cleanName = re.sub(r' ', '_', cleanName)
-        cleanName = re.sub(r'\d+:\d+:[\d.]+', '_', cleanName)
-        name_file = re.sub(r'_+', '_', cleanName)
-        name_file = name_file.lower()
-        # downloadm3u = mountipkpth()
-        xxxname = '/tmp/' + name_file + '.m3u'
-        # if os.path.exists(downloadm3u):
-            # xxxname = downloadm3u + name_file + '.m3u'
-        # else:
-            # xxxname = '/tmp/' + name_file + '.m3u'
-        # print('path m3u: ', xxxname)
-        req = Request(url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
-        r = urlopen(req, None, 15)
-        content = r.read()
-        r.close()
-        with open(xxxname, 'wb') as output:
-            output.write(content)
-        bouquetname = 'userbouquet.%s.%s' % (name_file.lower(), type.lower())
-        path1 = '/etc/enigma2/' + str(bouquetname)
-        path2 = '/etc/enigma2/bouquets.' + str(type.lower())
-        if os.path.exists(xxxname) and os.stat(xxxname).st_size > 0:
-            tmplist = []
-            tmplist.append('#NAME %s (%s)' % (name_file.upper(), type.upper()))
-            tmplist.append('#SERVICE 1:64:0:0:0:0:0:0:0:0::%s CHANNELS' % name_file)
-            tmplist.append('#DESCRIPTION --- %s ---' % name_file)
-            namel = ''
-            servicez = ''
-            descriptionz = ''
-            for line in open(xxxname):
-                if line.startswith("#EXTINF"):
-                    namel = '%s' % line.split(',')[-1]
-                    descriptiona = ('#DESCRIPTION %s' % namel).splitlines()
-                    descriptionz = ''.join(descriptiona)
-                elif line.startswith('http'):
-                    tag = '1'
-                    if type.upper() == 'RADIO':
-                        tag = '2'
-                    servicea = ('#SERVICE 4097:0:%s:0:0:0:0:0:0:0:%s' % (tag, line.replace(':', '%3a')))  # .rstrip('\r').rstrip('\n')
-                    servicez = (servicea + ':' + namel).splitlines()
-                    servicez = ''.join(servicez)
-
-                if servicez not in tmplist:
-                    tmplist.append(servicez)
-                    tmplist.append(descriptionz)
-
-            with open(path1, 'w+') as f:
-                for item in tmplist:
-                    if item not in f.read():
-                        f.write("%s\n" % item)
-                        # print('item  -------- ', item)
-            in_bouquets = 0
-            for line in open('/etc/enigma2/bouquets.%s' % type.lower()):
-                if bouquetname in line:
-                    in_bouquets = 1
-            if in_bouquets == 0:
-                '''
-                Rename unlinked bouquet file /etc/enigma2/userbouquet.webcam.tv to /etc/enigma2/userbouquet.webcam.tv.del
-                '''
-                with open(path2, 'a+') as f:
-                    bouquetTvString = '#SERVICE 1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "' + str(bouquetname) + '" ORDER BY bouquet\n'
-                    f.write(str(bouquetTvString))
-            try:
-                from enigma import eDVBDB
-                eDVBDB.getInstance().reloadServicelist()
-                eDVBDB.getInstance().reloadBouquets()
-                print('all bouquets reloaded...')
-            except:
-                eDVBDB = None
-                os.system('wget -qO - http://127.0.0.1/web/servicelistreload?mode=2 > /dev/null 2>&1 &')
-                print('bouquets reloaded...')
-            mbox = _session.open(MessageBox, _('bouquets reloaded..'), MessageBox.TYPE_INFO, timeout=5)
+            # self.convert_bouquet(url, name)
+            service = '4097'
+            ch = 0
+            ch = cvbq.convert_bouquet(url, name, service)
+            if ch:
+                _session.open(MessageBox, _('bouquets reloaded..\nWith %s channel' % ch), MessageBox.TYPE_INFO, timeout=5)
 
 
 class TvInfoBarShowHide():

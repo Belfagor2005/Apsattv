@@ -1044,38 +1044,30 @@ class Playstream2(
         self.onClose.append(self.cancel)
 
     def getAspect(self):
-        try:
-            aspect = iAVSwitch().getAspectRatioSetting()
-        except:
-            aspect = eAVSwitch().getAspectRatioSetting()
-        return aspect
+        return AVSwitch().getAspectRatioSetting()
 
     def getAspectString(self, aspectnum):
-        return {
-            0: '4:3 Letterbox',
-            1: '4:3 PanScan',
-            2: '16:9',
-            3: '16:9 always',
-            4: '16:10 Letterbox',
-            5: '16:10 PanScan',
-            6: '16:9 Letterbox'
-        }[aspectnum]
+        return {0: '4:3 Letterbox',
+                1: '4:3 PanScan',
+                2: '16:9',
+                3: '16:9 always',
+                4: '16:10 Letterbox',
+                5: '16:10 PanScan',
+                6: '16:9 Letterbox'}[aspectnum]
 
     def setAspect(self, aspect):
-        map = {
-            0: '4_3_letterbox',
-            1: '4_3_panscan',
-            2: '16_9',
-            3: '16_9_always',
-            4: '16_10_letterbox',
-            5: '16_10_panscan',
-            6: '16_9_letterbox'
-        }
+        map = {0: '4_3_letterbox',
+               1: '4_3_panscan',
+               2: '16_9',
+               3: '16_9_always',
+               4: '16_10_letterbox',
+               5: '16_10_panscan',
+               6: '16_9_letterbox'}
         config.av.aspectratio.setValue(map[aspect])
         try:
-            iAVSwitch.setAspectRatio(aspect)
+            AVSwitch().setAspectRatio(aspect)
         except:
-            eAVSwitch.setAspectRatio(aspect)
+            pass
 
     def av(self):
         temp = int(self.getAspect())

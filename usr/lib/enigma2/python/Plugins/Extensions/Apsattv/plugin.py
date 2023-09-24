@@ -805,7 +805,7 @@ class main2(Screen):
             ch = 0
             ch = self.convert_bouquet(service)
             if ch > 0:
-                _session.open(MessageBox, _('bouquets reloaded..\nWith %s channel' % ch), MessageBox.TYPE_INFO, timeout=5)
+                _session.open(MessageBox, _('bouquets reloaded..\nWith %s channel' % str(ch)), MessageBox.TYPE_INFO, timeout=5)
             else:
                 _session.open(MessageBox, _('Download Error'), MessageBox.TYPE_INFO, timeout=5)
 

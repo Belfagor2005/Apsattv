@@ -840,7 +840,7 @@ class main2(Screen):
         if six.PY3:
             content = six.ensure_str(content)
         with open(files, 'wb') as f1:
-            f1.write(content)
+            f1.write(content.encode())
             f1.close()
         sleep(5)
         ch = 0

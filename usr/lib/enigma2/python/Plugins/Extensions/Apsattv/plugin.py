@@ -19,44 +19,52 @@ from __future__ import print_function
 from . import _, paypal, host22
 from . import Utils
 from . import html_conv
-# from . import cvbq
+from .Console import Console as xConsole
+
 from Components.AVSwitch import AVSwitch
-try:
-    from enigma import eAVSwitch
-except Exception as e:
-    print(e)
 from Components.ActionMap import ActionMap
 from Components.config import config
 from Components.Label import Label
 from Components.MenuList import MenuList
-from Components.MultiContent import MultiContentEntryText
-from Components.MultiContent import MultiContentEntryPixmapAlphaTest
-# from Components.Pixmap import Pixmap
-from Components.ServiceEventTracker import ServiceEventTracker, InfoBarBase
+from Components.MultiContent import (MultiContentEntryText, MultiContentEntryPixmapAlphaTest)
+from Components.ServiceEventTracker import (ServiceEventTracker, InfoBarBase)
 from Plugins.Plugin import PluginDescriptor
-from Screens.InfoBarGenerics import InfoBarSubtitleSupport, InfoBarMenu
-from Screens.InfoBarGenerics import InfoBarSeek, InfoBarAudioSelection
-from Screens.InfoBarGenerics import InfoBarNotifications
+from Screens.InfoBarGenerics import (
+    InfoBarSubtitleSupport,
+    InfoBarSeek,
+    InfoBarAudioSelection,
+    InfoBarMenu,
+    InfoBarNotifications,
+)
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
-from Tools.Directories import SCOPE_PLUGINS
-from Tools.Directories import resolveFilename
+from Tools.Directories import (SCOPE_PLUGINS, resolveFilename)
 from Screens.VirtualKeyBoard import VirtualKeyBoard
-from enigma import RT_VALIGN_CENTER
-from enigma import RT_HALIGN_LEFT
-from enigma import eListboxPythonMultiContent
-from enigma import loadPNG, gFont  # ePicLoad
-from enigma import eServiceReference
-from enigma import eTimer
-from enigma import getDesktop
-from enigma import iPlayableService
+from enigma import (
+    RT_VALIGN_CENTER,
+    RT_HALIGN_LEFT,
+    eTimer,
+    eListboxPythonMultiContent,
+    eServiceReference,
+    iPlayableService,
+    gFont,
+    loadPNG,
+    getDesktop,
+)
+from datetime import datetime
 import os
 import re
 import sys
+# import codecs
+import json
+
+
 try:
     from os.path import isdir
 except ImportError:
     from os import isdir
+
+
 PY3 = sys.version_info.major >= 3
 if PY3:
     from urllib.request import urlopen, Request
@@ -68,12 +76,15 @@ else:
     from urllib2 import urlopen, Request
 
 global skin_path, search, dowm3u
-currversion = '1.1'
+
+currversion = '1.2'
 name_plugin = 'Apsattv Plugin'
 desc_plugin = ('..:: Apsat Tv International Channel List V. %s ::.. ' % currversion)
 PLUGIN_PATH = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('Apsattv'))
 res_plugin_path = os.path.join(PLUGIN_PATH, 'skin')
-_firstStartfh = True
+installer_url = 'aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0JlbGZhZ29yMjAwNS9BcHNhdHR2L21haW4vaW5zdGFsbGVyLnNo'
+developer_url = 'aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9CZWxmYWdvcjIwMDUvQXBzYXR0dg=='
+# _firstStartfh = True
 search = False
 dowm3u = '/media/hdd/movie/'
 dir_enigma2 = '/etc/enigma2/'
@@ -88,14 +99,6 @@ else:
 
 if os.path.exists('/var/lib/dpkg/info'):
     skin_path = skin_path + '/dreamOs'
-
-
-# try:
-    # from Components.UsageConfig import defaultMoviePath
-    # dowm3u = defaultMoviePath()
-# except:
-    # if os.path.exists("/usr/bin/apt-get"):
-        # dowm3u = ('/media/hdd/movie/')
 
 
 def pngassign(name):
@@ -232,10 +235,10 @@ def show_(name, link):
         res.append(MultiContentEntryText(pos=(90, 0), size=(1200, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
     elif screenwidth.width() == 1920:
         res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 2), size=(54, 40), png=loadPNG(png)))
-        res.append(MultiContentEntryText(pos=(70, 0), size=(1000, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+        res.append(MultiContentEntryText(pos=(70, 0), size=(950, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
     else:
         res.append(MultiContentEntryPixmapAlphaTest(pos=(3, 10), size=(54, 40), png=loadPNG(png)))
-        res.append(MultiContentEntryText(pos=(50, 0), size=(500, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+        res.append(MultiContentEntryText(pos=(50, 0), size=(650, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
     return res
 
 
@@ -279,6 +282,7 @@ class Apsattv(Screen):
         self['key_red'] = Label(_('Exit'))
         self['key_green'] = Label('Select')
         self['key_blue'] = Label()
+        self['key_yellow'] = Label(_('Update'))
         self['category'] = Label("Plugins Channels Free by Lululla")
         self['title'] = Label("Thank's Apsattv")
         self['name'] = Label('')
@@ -293,17 +297,87 @@ class Apsattv(Screen):
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
         self['actions'] = ActionMap(['OkCancelActions',
                                      'ColorActions',
-                                     # 'ButtonSetupActions',
+                                     'HotkeyActions',
+                                     'InfobarEPGActions',
+                                     'ChannelSelectBaseActions',
                                      'DirectionActions'], {'up': self.up,
                                                            'down': self.down,
                                                            'left': self.left,
                                                            'right': self.right,
+                                                           'yellow': self.update_me,  # update_me,
+                                                           'yellow_long': self.update_dev,
+                                                           'info_long': self.update_dev,
+                                                           'infolong': self.update_dev,
+                                                           'showEventInfoPlugin': self.update_dev,
                                                            'ok': self.ok,
                                                            'green': self.ok,
-                                                           'cancel': self.exit,
-                                                           'red': self.exit}, -1)
+                                                           'cancel': self.exitx,
+                                                           'red': self.exitx}, -1)
+        self.timer = eTimer()
+        if os.path.exists('/var/lib/dpkg/status'):
+            self.timer_conn = self.timer.timeout.connect(self.check_vers)
+        else:
+            self.timer.callback.append(self.check_vers)
+        self.timer.start(500, 1)
         self.onLayoutFinish.append(self.updateMenuList)
         self.onLayoutFinish.append(self.layoutFinished)
+
+    def check_vers(self):
+        remote_version = '0.0'
+        remote_changelog = ''
+        req = Utils.Request(Utils.b64decoder(installer_url), headers={'User-Agent': 'Mozilla/5.0'})
+        page = Utils.urlopen(req).read()
+        if PY3:
+            data = page.decode("utf-8")
+        else:
+            data = page.encode("utf-8")
+        if data:
+            lines = data.split("\n")
+            for line in lines:
+                if line.startswith("version"):
+                    remote_version = line.split("=")
+                    remote_version = line.split("'")[1]
+                if line.startswith("changelog"):
+                    remote_changelog = line.split("=")
+                    remote_changelog = line.split("'")[1]
+                    break
+        self.new_version = remote_version
+        self.new_changelog = remote_changelog
+        if currversion < remote_version:
+            self.Update = True
+            # self['key_yellow'].show()
+            # self['key_green'].show()
+            self.session.open(MessageBox, _('New version %s is available\n\nChangelog: %s\n\nPress info_long or yellow_long button to start force updating.') % (self.new_version, self.new_changelog), MessageBox.TYPE_INFO, timeout=5)
+        # self.update_me()
+
+    def update_me(self):
+        if self.Update is True:
+            self.session.openWithCallback(self.install_update, MessageBox, _("New version %s is available.\n\nChangelog: %s \n\nDo you want to install it now?") % (self.new_version, self.new_changelog), MessageBox.TYPE_YESNO)
+        else:
+            self.session.open(MessageBox, _("Congrats! You already have the latest version..."),  MessageBox.TYPE_INFO, timeout=4)
+
+    def update_dev(self):
+        try:
+            req = Utils.Request(Utils.b64decoder(developer_url), headers={'User-Agent': 'Mozilla/5.0'})
+            page = Utils.urlopen(req).read()
+            data = json.loads(page)
+            remote_date = data['pushed_at']
+            strp_remote_date = datetime.strptime(remote_date, '%Y-%m-%dT%H:%M:%SZ')
+            remote_date = strp_remote_date.strftime('%Y-%m-%d')
+            self.session.openWithCallback(self.install_update, MessageBox, _("Do you want to install update ( %s ) now?") % (remote_date), MessageBox.TYPE_YESNO)
+        except Exception as e:
+            print('error xcons:', e)
+
+    def install_update(self, answer=False):
+        if answer:
+            cmd1 = 'wget -q "--no-check-certificate" ' + Utils.b64decoder(installer_url) + ' -O - | /bin/sh'
+            self.session.open(xConsole, 'Upgrading...', cmdlist=[cmd1], finishedCallback=self.myCallback, closeOnSuccess=False)
+        else:
+            self.session.open(MessageBox, _("Update Aborted!"),  MessageBox.TYPE_INFO, timeout=3)
+
+    def myCallback(self, result=None):
+        print('result:', result)
+        return
 
     def layoutFinished(self):
         payp = paypal()
@@ -328,23 +402,11 @@ class Apsattv(Screen):
         self.keyNumberGlobalCB(self['menulist'].getSelectedIndex())
 
     def keyNumberGlobalCB(self, idx):
-        # global namex  # , lnk
         namex = "Directy"
-        # lnk = Utils.b64decoder(host22)
         sel = self.menu_list[idx]
         if sel == ("PLAYLISTS ONLINE"):
-            # namex = "Directy"
             lnk = Utils.b64decoder(host22)
             self.session.open(selectplay, namex, lnk)
-
-    # def adultonly(self, namex, lnk):
-        # self.session.openWithCallback(self.cancelConfirm, MessageBox, _('These streams may contain Adult content\n\nare you sure you want to continue??'))
-
-    # def cancelConfirm(self, result):
-        # if not result:
-            # return
-        # else:
-            # self.session.open(selectplay, namex, lnk)
 
     def up(self):
         try:
@@ -378,7 +440,7 @@ class Apsattv(Screen):
         except Exception as e:
             print(e)
 
-    def exit(self):
+    def exitx(self):
         self.close()
 
 
@@ -411,7 +473,6 @@ class selectplay(Screen):
         self['name'] = Label('')
         self['actions'] = ActionMap(['OkCancelActions',
                                      'ColorActions',
-                                     # 'ButtonSetupActions',
                                      'DirectionActions'], {'up': self.up,
                                                            'down': self.down,
                                                            'left': self.left,
@@ -971,16 +1032,14 @@ class TvInfoBarShowHide():
         print(text + " %s\n" % obj)
 
 
-class Playstream2(
-                  InfoBarBase,
+class Playstream2(InfoBarBase,
                   InfoBarMenu,
                   InfoBarSeek,
                   InfoBarAudioSelection,
                   InfoBarSubtitleSupport,
                   InfoBarNotifications,
                   TvInfoBarShowHide,
-                  Screen
-                  ):
+                  Screen):
     STATE_IDLE = 0
     STATE_PLAYING = 1
     STATE_PAUSED = 2
@@ -1183,106 +1242,6 @@ class Playstream2(
     def leavePlayer(self):
         self.close()
 
-    def convert_bouquet(self, service):
-        from time import sleep
-        type = 'tv'
-        if "radio" in self.name.lower():
-            type = "radio"
-        name_file = self.name.replace('/', '_').replace(',', '').replace('hasbahca', 'hbc')
-        cleanName = re.sub(r'[\<\>\:\"\/\\\|\?\*]', '_', str(name_file))
-        cleanName = re.sub(r' ', '_', cleanName)
-        cleanName = re.sub(r'\d+:\d+:[\d.]+', '_', cleanName)
-        name_file = re.sub(r'_+', '_', cleanName)
-        bouquetname = 'userbouquet.astv_%s.%s' % (name_file.lower(), type.lower())
-        files = ''
-        if os.path.exists(str(dowm3u)):
-            files = str(dowm3u) + str(name_file) + '.m3u'
-        else:
-            files = '/tmp/' + str(name_file) + '.m3u'
-        if os.path.isfile(files):
-            os.remove(files)
-        urlm3u = self.url.strip()
-        if PY3:
-            urlm3u.encode()
-        import six
-        content = Utils.getUrl(urlm3u)
-        if six.PY3:
-            content = six.ensure_str(content)
-        with open(files, 'wb') as f1:
-            f1.write(content.encode())
-            f1.close()
-        sleep(5)
-        ch = 0
-        try:
-            if os.path.isfile(files) and os.stat(files).st_size > 0:
-                print('ChannelList is_tmp exist in playlist')
-                desk_tmp = ''
-                in_bouquets = 0
-                with open('%s%s' % (dir_enigma2, bouquetname), 'w') as outfile:
-                    outfile.write('#NAME %s\r\n' % name_file.capitalize())
-                    for line in open(files):
-                        if line.startswith('http://') or line.startswith('https'):
-                            outfile.write('#SERVICE %s:0:1:1:0:0:0:0:0:0:%s' % (service, line.replace(':', '%3a')))
-                            outfile.write('#DESCRIPTION %s' % desk_tmp)
-                        elif line.startswith('#EXTINF'):
-                            desk_tmp = '%s' % line.split(',')[-1]
-                        elif '<stream_url><![CDATA' in line:
-                            outfile.write('#SERVICE %s:0:1:1:0:0:0:0:0:0:%s\r\n' % (service, line.split('[')[-1].split(']')[0].replace(':', '%3a')))
-                            outfile.write('#DESCRIPTION %s\r\n' % desk_tmp)
-                        elif '<title>' in line:
-                            if '<![CDATA[' in line:
-                                desk_tmp = '%s\r\n' % line.split('[')[-1].split(']')[0]
-                            else:
-                                desk_tmp = '%s\r\n' % line.split('<')[1].split('>')[1]
-                        ch += 1
-                    outfile.close()
-                if os.path.isfile('/etc/enigma2/bouquets.tv'):
-                    for line in open('/etc/enigma2/bouquets.tv'):
-                        if bouquetname in line:
-                            in_bouquets = 1
-                    if in_bouquets == 0:
-                        if os.path.isfile('%s%s' % (dir_enigma2, bouquetname)) and os.path.isfile('/etc/enigma2/bouquets.tv'):
-                            Utils.remove_line('/etc/enigma2/bouquets.tv', bouquetname)
-                            with open('/etc/enigma2/bouquets.tv', 'a+') as outfile:
-                                outfile.write('#SERVICE 1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "%s" ORDER BY bouquet\r\n' % bouquetname)
-                                outfile.close()
-                                in_bouquets = 1
-                    Utils.ReloadBouquets()
-            return ch
-        except Exception as e:
-            print('error convert iptv ', e)
-
-
-
-class AutoStartTimerFh:
-
-    def __init__(self, session):
-        self.session = session
-        global _firstStartfh
-        print("*** running AutoStartTimerFh ***")
-        if _firstStartfh:
-            self.runUpdate()
-
-    def runUpdate(self):
-        print("*** running update ***")
-        try:
-            from . import Update
-            Update.upd_done()
-            _firstStartfh = False
-        except Exception as e:
-            print('error Fxy', str(e))
-
-
-def autostart(reason, session=None, **kwargs):
-    print("*** running autostart ***")
-    global autoStartTimerFh
-    global _firstStartfh
-    if reason == 0:
-        if session is not None:
-            _firstStartfh = True
-            autoStartTimerFh = AutoStartTimerFh(session)
-    return
-
 
 def main(session, **kwargs):
     try:
@@ -1295,7 +1254,6 @@ def main(session, **kwargs):
 def Plugins(**kwargs):
     ico_path = 'plugin.png'
     # extDescriptor = PluginDescriptor(name=name_plugin, description=desc_plugin, where=[PluginDescriptor.WHERE_EXTENSIONSMENU], icon=ico_path, fnc=main)
-    result = [PluginDescriptor(name=name_plugin, description=desc_plugin, where=[PluginDescriptor.WHERE_SESSIONSTART], fnc=autostart),
-              PluginDescriptor(name=name_plugin, description=desc_plugin, where=PluginDescriptor.WHERE_PLUGINMENU, icon=ico_path, fnc=main)]
+    result = [PluginDescriptor(name=name_plugin, description=desc_plugin, where=PluginDescriptor.WHERE_PLUGINMENU, icon=ico_path, fnc=main)]
     # result.append(extDescriptor)
     return result

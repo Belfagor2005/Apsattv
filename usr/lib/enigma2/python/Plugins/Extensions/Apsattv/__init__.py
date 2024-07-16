@@ -6,8 +6,8 @@ from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 import gettext
 import os
 
-PluginLanguageDomain = 'freearhey'
-PluginLanguagePath = 'Extensions/freearhey/res/locale'
+PluginLanguageDomain = 'Apsattv'
+PluginLanguagePath = 'Extensions/Apsattv/res/locale'
 host22 = 'aHR0cDovL3d3dy5hcHNhdHR2LmNvbS9zdHJlYW1zLmh0bWw='
 isDreamOS = False
 if os.path.exists("/var/lib/dpkg/status"):

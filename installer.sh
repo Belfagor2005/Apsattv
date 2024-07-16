@@ -13,7 +13,18 @@ if [ ! -d /usr/lib64 ]; then
 	PLUGINPATH=/usr/lib64/enigma2/python/Plugins/Extensions/Apsattv
 fi
 
-# check depends packges
+
+## Remove tmp directory
+[ -r $TMPPATH ] && rm -f $TMPPATH > /dev/null 2>&1
+
+## Remove tmp directory
+[ -r $FILEPATH ] && rm -f $FILEPATH > /dev/null 2>&1
+
+## Remove old plugin directory
+[ -r $PLUGINPATH ] && rm -rf $PLUGINPATH
+
+
+## check depends packges
 if [ -f /var/lib/dpkg/status ]; then
    STATUS=/var/lib/dpkg/status
    OSTYPE=DreamOs
@@ -59,17 +70,17 @@ else
 fi
 echo ""
 
-## Remove tmp directory
-[ -r $TMPPATH ] && rm -f $TMPPATH > /dev/null 2>&1
+# ## Remove tmp directory
+# [ -r $TMPPATH ] && rm -f $TMPPATH > /dev/null 2>&1
 
-## Remove tmp directory
-[ -r $FILEPATH ] && rm -f $FILEPATH > /dev/null 2>&1
+# ## Remove tmp directory
+# [ -r $FILEPATH ] && rm -f $FILEPATH > /dev/null 2>&1
 
-## Remove old plugin directory
-[ -r $PLUGINPATH ] && rm -rf $PLUGINPATH
+# ## Remove old plugin directory
+# [ -r $PLUGINPATH ] && rm -rf $PLUGINPATH
 
-# Download and install plugin
-# check depends packges
+## Download and install plugin
+## check depends packges
 mkdir -p $TMPPATH
 cd $TMPPATH
 set -e
@@ -96,9 +107,9 @@ sleep 2
 ## Check if plugin installed correctly
 if [ ! -d $PLUGINPATH ]; then
 	echo "Some thing wrong .. Plugin not installed"
+	rm -rf $TMPPATH > /dev/null 2>&1	
 	exit 1
 fi
-
 rm -rf $TMPPATH > /dev/null 2>&1
 sync
 echo ""

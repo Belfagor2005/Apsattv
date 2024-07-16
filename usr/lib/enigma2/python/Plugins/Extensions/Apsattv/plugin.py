@@ -289,6 +289,7 @@ class Apsattv(Screen):
         self["paypal"] = Label()
         # self.picload = ePicLoad()
         # self.picfile = ''
+        self.Update = False
         self.currentList = 'menulist'
         self.menulist = []
         self.loading_ok = False

@@ -289,13 +289,13 @@ class Apsattv(Screen):
         self["paypal"] = Label()
         # self.picload = ePicLoad()
         # self.picfile = ''
-        self.Update = False
         self.currentList = 'menulist'
         self.menulist = []
         self.loading_ok = False
         self.count = 0
         self.loading = 0
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
+        self.Update = False
         self['actions'] = ActionMap(['OkCancelActions',
                                      'ColorActions',
                                      'HotkeyActions',

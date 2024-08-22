@@ -297,7 +297,6 @@ class Apsattv(Screen):
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
         self.Update = False
         self['actions'] = ActionMap(['OkCancelActions',
-                                     'ColorActions',
                                      'HotkeyActions',
                                      'InfobarEPGActions',
                                      'ChannelSelectBaseActions',

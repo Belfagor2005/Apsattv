@@ -142,7 +142,6 @@ def pngassign(name):
     return png
 
 
-
 def defaultMoviePath():
     result = config.usage.default_path.value
     if not isdir(result):
@@ -426,6 +425,7 @@ class selectplay(Screen):
         self['key_red'] = Label(_('Exit'))
         self['key_green'] = Label(_('Search'))
         self['key_blue'] = Label(_('Remove Bouquet'))
+        self['key_yellow'] = Label()
         self['title'] = Label("Thank's Apsattv")
         self['category'] = Label('')
         self['category'].setText(namex)
@@ -635,6 +635,7 @@ class main2(Screen):
         self['key_red'] = Label(_('Back'))
         self['key_green'] = Label(_('Search'))
         self['key_blue'] = Label(_('Export'))
+        self['key_yellow'] = Label()
         self['category'] = Label('')
         self['category'].setText(namex)
         self['title'] = Label("Thank's Apsattv")

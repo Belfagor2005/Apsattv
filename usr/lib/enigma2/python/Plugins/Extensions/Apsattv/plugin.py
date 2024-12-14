@@ -97,7 +97,7 @@ elif screenwidth.width() == 1920:
 else:
     skin_path = PLUGIN_PATH + '/skin/hd'
 
-if os.path.exists('/var/lib/dpkg/info'):
+if os.path.exists('/usr/bin/apt-get'):
     skin_path = skin_path + '/dreamOs'
 
 
@@ -272,7 +272,7 @@ class Apsattv(Screen):
                                                            'cancel': self.exitx,
                                                            'red': self.exitx}, -1)
         self.timer = eTimer()
-        if os.path.exists('/var/lib/dpkg/status'):
+        if os.path.exists('/usr/bin/apt-get'):
             self.timer_conn = self.timer.timeout.connect(self.check_vers)
         else:
             self.timer.callback.append(self.check_vers)
@@ -653,7 +653,7 @@ class main2(Screen):
                                                            'cancel': self.closex,
                                                            'red': self.closex}, -1)
         self.timer = eTimer()
-        if os.path.exists('/var/lib/dpkg/info'):
+        if os.path.exists('/usr/bin/apt-get'):
             self.timer_conn = self.timer.timeout.connect(self.updateMenuList)
         else:
             self.timer.callback.append(self.updateMenuList)

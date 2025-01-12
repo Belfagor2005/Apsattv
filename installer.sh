@@ -116,7 +116,7 @@ rm -rf $TMPPATH > /dev/null 2>&1
 sync
 
 
-exec > >(tee -a /tmp/NssWidget_debug.txt) 2>&1
+exec > >(tee -a /tmp/debug.txt) 2>&1
 set -x
 
 # # Identify the box type from the hostname file
@@ -126,7 +126,7 @@ distro_value=$(grep '^distro=' "$FILE" | awk -F '=' '{print $2}')
 distro_version=$(grep '^version=' "$FILE" | awk -F '=' '{print $2}')
 python_vers=$(python --version 2>&1)
 echo "#########################################################
-#          NssWidget INSTALLED SUCCESSFULLY             #
+#          	    INSTALLED SUCCESSFULLY                  #
 #                developed by LULULLA                   #
 #               https://corvoboys.org                   #
 #########################################################

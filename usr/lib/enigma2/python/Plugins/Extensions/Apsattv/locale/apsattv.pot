@@ -1,0 +1,113 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Apsattv\n"
+"POT-Creation-Date: 2025-01-24 21:40+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: lululla\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: plugin.py\n"
+
+#: plugin.py:305 plugin.py:512
+msgid "Exit"
+msgstr ""
+
+#: plugin.py:307
+msgid "Update"
+msgstr ""
+
+#: plugin.py:383
+#, python-format
+msgid "Error checking version: %s"
+msgstr ""
+
+#: plugin.py:392
+#, python-format
+msgid ""
+"New version %s is available\n"
+"\n"
+"Changelog: %s\n"
+"\n"
+"Press info_long or yellow_long button to start force updating."
+msgstr ""
+
+#: plugin.py:399
+#, python-format
+msgid ""
+"New version %s is available.\n"
+"\n"
+"Changelog: %s \n"
+"\n"
+"Do you want to install it now?"
+msgstr ""
+
+#: plugin.py:401
+msgid "Congrats! You already have the latest version..."
+msgstr ""
+
+#: plugin.py:414
+#, python-format
+msgid "Do you want to install update ( %s ) now?"
+msgstr ""
+
+#: plugin.py:423
+msgid "Update Aborted!"
+msgstr ""
+
+#: plugin.py:513 plugin.py:554 plugin.py:766
+msgid "Search"
+msgstr ""
+
+#: plugin.py:515
+msgid "Remove Bouquet"
+msgstr ""
+
+#: plugin.py:710
+msgid "Remove all APSATTV Favorite Bouquet?"
+msgstr ""
+
+#: plugin.py:734
+msgid "APSATTV Favorites List have been removed"
+msgstr ""
+
+#: plugin.py:765
+msgid "Back"
+msgstr ""
+
+#: plugin.py:767
+msgid "Export"
+msgstr ""
+
+#: plugin.py:808
+msgid "Filter this category..."
+msgstr ""
+
+#: plugin.py:1000
+msgid ""
+"Do you want to Convert to favorite .tv ?\n"
+"\n"
+"Attention!! It may take some time depending\n"
+"on the number of streams contained !!!"
+msgstr ""
+
+#: plugin.py:1007
+#, python-format
+msgid ""
+"bouquets reloaded..\n"
+"With %s channel"
+msgstr ""
+
+#: plugin.py:1009
+msgid "Download Error"
+msgstr ""
+
+#: plugin.py:1337
+msgid "Please install SubSupport Plugins"
+msgstr ""

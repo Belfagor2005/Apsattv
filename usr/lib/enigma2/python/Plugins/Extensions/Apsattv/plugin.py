@@ -70,15 +70,17 @@ PY3 = False
 PY3 = sys.version_info.major >= 3
 if PY3:
     from urllib.request import urlopen, Request
+    from urllib.error import URLError, HTTPError
     unicode = str
     unichr = chr
     long = int
     PY3 = True
 else:
     from urllib2 import urlopen, Request
+    from urllib2 import URLError, HTTPError
 
 
-currversion = '1.2'
+currversion = '1.3'
 name_plugin = 'Apsattv Plugin'
 desc_plugin = ('..:: Apsat Tv International Channel List V. %s ::.. ' % currversion)
 PLUGIN_PATH = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('Apsattv'))
@@ -163,10 +165,10 @@ class free2list(MenuList):
         Configure font size and item height based on the screen width.
         """
         if screen_width == 2560:
-            self.l.setFont(0, gFont('Regular', 48))
-            self.l.setItemHeight(56)
+            self.l.setFont(0, gFont('Regular', 50))
+            self.l.setItemHeight(60)
         elif screen_width == 1920:
-            self.l.setFont(0, gFont('Regular', 36))
+            self.l.setFont(0, gFont('Regular', 46))
             self.l.setItemHeight(50)
         else:
             self.l.setFont(0, gFont('Regular', 24))
@@ -175,22 +177,27 @@ class free2list(MenuList):
 
 def show_(name, link):
     """
-    Create an entry for the webcam list with text and icon based on screen width.
+    Crea un'entry per la lista webcam con testo e icona basati sulla risoluzione dello schermo.
 
-    :param name: Name of the webcam.
-    :return: List representing the entry.
+    :param name: Nome della webcam.
+    :param link: Link associato alla webcam.
+    :return: Lista che rappresenta l'entry.
     """
     png = pngassign(name)
     res = [(name, link)]
+
     if screen_width == 2560:
-        res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 2), size=(70, 56), png=loadPNG(png)))
-        res.append(MultiContentEntryText(pos=(90, 0), size=(1200, 60), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+        icon_pos, icon_size = (5, 2), (70, 50)
+        text_pos, text_size = (90, 0), (1200, 60)
     elif screen_width == 1920:
-        res.append(MultiContentEntryPixmapAlphaTest(pos=(5, 2), size=(54, 40), png=loadPNG(png)))
-        res.append(MultiContentEntryText(pos=(90, 0), size=(950, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+        icon_pos, icon_size = (5, 0), (54, 40)
+        text_pos, text_size = (90, 0), (950, 50)
     else:
-        res.append(MultiContentEntryPixmapAlphaTest(pos=(3, 10), size=(54, 40), png=loadPNG(png)))
-        res.append(MultiContentEntryText(pos=(65, 0), size=(500, 50), font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
+        icon_pos, icon_size = (3, 0), (54, 40)
+        text_pos, text_size = (65, 0), (500, 50)
+
+    res.append(MultiContentEntryPixmapAlphaTest(pos=icon_pos, size=icon_size, png=loadPNG(png)))
+    res.append(MultiContentEntryText(pos=text_pos, size=text_size, font=0, text=name, color=0xa6d1fe, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER))
     return res
 
 
@@ -226,6 +233,55 @@ def returnIMDB(text_clear):
         _session.open(MessageBox, text, MessageBox.TYPE_INFO)
         return True
     return False
+
+
+def filter_channels(url, result, menu_list, show_):
+    """
+    Filtra i canali in base al risultato della ricerca.
+    """
+    # if not result:
+        # reset_search()
+        # return
+
+    items = []
+    try:
+        menu_list.clear()
+
+        req = Request(url)
+        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
+        r = urlopen(req, None, 15)
+        content = r.read()
+        r.close()
+
+        if isinstance(content, bytes):
+            content = content.decode("utf-8")
+
+        regexcat = r"#EXTINF.*?,(.*?)\n(.*?)\n"
+        match = re.findall(regexcat, content, re.DOTALL)
+
+        for name, url in match:
+            if str(result).lower() in name.lower():
+                name = name.capitalize()
+                url = url.replace('\\n', '').strip()
+                item = name + "###" + url
+                if item not in items:
+                    items.append(item)
+
+        items.sort()
+        for item in items:
+            name, url = item.split("###")
+            menu_list.append(show_(name, url))
+
+        if menu_list:
+            auswahl = menu_list[0][0]  # Adjust this to your specific widget or list reference
+            return auswahl
+        else:
+            return 'No results found'
+
+    except (URLError, HTTPError) as e:
+        print('Error with URL request: %s' % str(e))
+    except Exception as e:
+        print('Generic error: %s' % str(e))
 
 
 class Apsattv(Screen):
@@ -294,8 +350,26 @@ class Apsattv(Screen):
         remote_version = '0.0'
         remote_changelog = ''
         try:
+
+            def feth(url):
+                try:
+                    req = Request('http://example.com')
+                    response = urlopen(req)
+                    content = response.read()
+                    response.close()
+                    return content
+                except HTTPError as e:
+                    print('Errore HTTP: %s' % str(e))
+                except URLError as e:
+                    print('Errore URL: %s' % str(e))
+                except Exception as e:
+                    print('Errore generico: %s' % str(e))
+                return None
+
             req = Utils.Request(Utils.b64decoder(installer_url), headers={'User-Agent': 'Mozilla/5.0'})
             page = Utils.urlopen(req).read()
+            # data = page.decode("utf-8") if PY3 else page.encode("utf-8")
+            page = feth(installer_url)
             data = page.decode("utf-8") if PY3 else page.encode("utf-8")
             if data:
                 lines = data.split("\n")
@@ -480,36 +554,59 @@ class selectplay(Screen):
         self.session.openWithCallback(self.filterChannels, VirtualKeyBoard, title=_("Search"), text='')
 
     def filterChannels(self, result):
-        global search
-        if result:
-            try:
-                self.menu_list = []
-                if result is not None and len(result):
-                    req = Request(self.url)
-                    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
-                    r = urlopen(req, None, 15)
-                    content = r.read()
-                    r.close()
-                    if str(type(content)).find('bytes') != -1:
-                        try:
-                            content = content.decode("utf-8")
-                        except Exception as e:
-                            print("Error: %s." % str(e))
-                    regexcat = 'https://www.apsattv.com/(.+?).m3u<'
-                    match = re.compile(regexcat, re.DOTALL).findall(content)
-                    for name in match:
-                        if str(result).lower() in name.lower():
-                            search = True
-                            url = 'https://www.apsattv.com/' + name + '.m3u'
-                            name = name.capitalize()
-                            self.menu_list.append(show_(name, url))
-                        self['menulist'].l.setList(self.menu_list)
-                    auswahl = self['menulist'].getCurrent()[0][0]
-                    self['name'].setText(str(auswahl))
-            except Exception as e:
-                print('error ', str(e))
-        else:
+        """
+        Filtra i canali in base al risultato della ricerca.
+        """
+        if not result:
             self.resetSearch()
+            return
+
+        # items = []
+        self.menu_list = []
+        # items = []
+        # pic = os.path.join(res_plugin_path, 'pic/tv.png')
+        try:
+            auswahl = filter_channels(self.url, result, self.menu_list, show_)
+            # req = Request(self.url)
+            # req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
+            # r = urlopen(req, None, 15)
+            # content = r.read()
+            # r.close()
+
+            # if isinstance(content, bytes):
+                # content = content.decode("utf-8")
+
+            # regexcat = r"#EXTINF.*?,(.*?)\n(.*?)\n"
+            # match = re.findall(regexcat, content, re.DOTALL)
+
+            # for name, url in match:
+                # if str(result).lower() in name.lower():
+                    # name = name.capitalize()
+                    # url = url.replace('\\n', '').strip()
+                    # item = name + "###" + url
+                    # if item not in items:
+                        # items.append(item)
+
+            # items.sort()
+            # for item in items:
+                # name, url = item.split("###")
+                # self.menu_list.append(show_(name, url))
+
+            # self['menulist'].l.setList(self.menu_list)
+            if self.menu_list:
+                # auswahl = self['menulist'].getCurrent()[0][0]
+                self['name'].setText(str(auswahl))
+            else:
+                self['name'].setText('No results found')
+                self.resetSearch()
+                return
+        except Exception as e:
+            print('Error finder', e)
+
+        # except (URLError, HTTPError) as e:
+            # print('Errore request URL: %s' % str(e))
+        # except Exception as e:
+            # print('generic Error: %s' % str(e))
 
     def returnback(self):
         global search
@@ -529,6 +626,9 @@ class selectplay(Screen):
         self.updateMenuList()
 
     def updateMenuList(self):
+        """
+        Aggiorna la lista del menu scaricando e analizzando il contenuto dall'URL specificato.
+        """
         self.menu_list = []
         items = []
         try:
@@ -537,28 +637,37 @@ class selectplay(Screen):
             r = urlopen(req, None, 15)
             content = r.read()
             r.close()
-            if str(type(content)).find('bytes') != -1:
+            if isinstance(content, bytes):  # Controllo esplicito
                 try:
                     content = content.decode("utf-8")
                 except Exception as e:
-                    print("Error: %s." % str(e))
-            regexcat = 'https://www.apsattv.com/(.+?).m3u<'
+                    print("Errore nella decodifica del contenuto: %s" % str(e))
+                    return
+
+            regexcat = r'https://www.apsattv.com/(.+?).m3u<'
             match = re.compile(regexcat, re.DOTALL).findall(content)
+
             for name in match:
                 url = 'https://www.apsattv.com/' + name + '.m3u'
                 name = name.capitalize()
                 item = name + "###" + url + '\n'
                 items.append(item)
-            items.sort()
-            for item in items:
-                name = item.split('###')[0]
-                url = item.split('###')[1]
+
+            for item in sorted(items):
+                name, url = item.split('###')
                 self.menu_list.append(show_(name, url))
+
             self['menulist'].l.setList(self.menu_list)
-            auswahl = self['menulist'].getCurrent()[0][0]
-            self['name'].setText(str(auswahl))
+            if self.menu_list:
+                auswahl = self['menulist'].getCurrent()[0][0]
+                self['name'].setText(str(auswahl))
+            else:
+                self['name'].setText("Nessun elemento trovato.")
+
+        except (URLError, HTTPError) as e:
+            print("Errore HTTP/URL: %s" % str(e))
         except Exception as e:
-            print('exception error II ', str(e))
+            print("Errore generico: %s" % str(e))
 
     def ok(self):
         name = self['menulist'].getCurrent()[0][0]
@@ -602,25 +711,35 @@ class selectplay(Screen):
 
     def deleteBouquets(self, result):
         """
-        Clean up routine to remove any previously made changes
+        Routine di pulizia per rimuovere eventuali modifiche apportate in precedenza ai bouquet.
         """
         if result:
             try:
                 for fname in os.listdir(enigma_path):
                     if 'userbouquet.wrd_' in fname or 'bouquets.tv.bak' in fname:
                         Utils.purge(enigma_path, fname)
-                os.rename(os.path.join(enigma_path, 'bouquets.tv'), os.path.join(enigma_path, 'bouquets.tv.bak'))
-                with open(os.path.join(enigma_path, 'bouquets.tv.bak'), 'r') as bakfile:
-                    with open(os.path.join(enigma_path, 'bouquets.tv'), 'w+') as tvfile:
-                        for line in bakfile:
-                            if '.astv_' not in line:
-                                tvfile.write(line)
-                self.session.open(MessageBox, _('APSATTV Favorites List have been removed'), MessageBox.TYPE_INFO, timeout=5)
+                bouquets_tv = os.path.join(enigma_path, 'bouquets.tv')
+                bouquets_bak = os.path.join(enigma_path, 'bouquets.tv.bak')
+                if os.path.exists(bouquets_tv):
+                    os.rename(bouquets_tv, bouquets_bak)
+                else:
+                    print("Il file 'bouquets.tv' non esiste. Nessuna modifica apportata.")
+                    return
+                with open(bouquets_bak, 'r') as bakfile, open(bouquets_tv, 'w') as tvfile:
+                    for line in bakfile:
+                        if '.astv_' not in line:
+                            tvfile.write(line)
+                self.session.open(
+                    MessageBox,
+                    _('APSATTV Favorites List have been removed'),
+                    MessageBox.TYPE_INFO,
+                    timeout=5
+                )
                 Utils.ReloadBouquets()
+            except OSError as e:
+                print("Errore OS durante la modifica dei bouquet: %s" % str(e))
             except Exception as ex:
-                print(str(ex))
-                raise
-        return
+                print("Errore generico: %s" % str(ex))
 
 
 class main2(Screen):
@@ -636,6 +755,7 @@ class main2(Screen):
         self.loading_ok = False
         self.count = 0
         self.loading = 0
+        # self.selectplay = selectplay()
         self.name = namex
         self.url = lnk
         self.search = ''
@@ -689,49 +809,76 @@ class main2(Screen):
 
     # use menultist for search
     def filterChannels(self, result):
-        if result:
-            i = len(self.menu_list)
-            del self.menu_list[0:i]
-            self.menu_list = []
-            items = []
-            pic = os.path.join(res_plugin_path, 'pic/tv.png')
-            try:
-                req = Request(self.url)
-                req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
-                r = urlopen(req, None, 15)
-                content = r.read()
-                r.close()
-                if str(type(content)).find('bytes') != -1:
-                    try:
-                        content = content.decode("utf-8")
-                    except Exception as e:
-                        print("Error: %s." % str(e))
-                regexcat = '#EXTINF.*?,(.*?)\\n(.*?)\\n'
-                match = re.compile(regexcat, re.DOTALL).findall(content)
-                for name, url in match:
-                    if str(result).lower() in name.lower():
-                        global search
-                        search = True
-                        name = name.capitalize()
-                        url = url.replace(' ', '')
-                        url = url.replace('\\n', '')
-                        pic = pic
-                        item = name + "###" + url + '\n'
-                        if item not in items:
-                            items.append(item)
-                items.sort()
-                for item in items:
-                    name = item.split("###")[0]
-                    url = item.split("###")[1]
-                    name = name.capitalize()
-                    self.menu_list.append(show_(name, url))
-                    self['menulist'].l.setList(self.menu_list)
-                auswahl = self['menulist'].getCurrent()[0][0]
-                self['name'].setText(str(auswahl))
-            except Exception as e:
-                print('error ', str(e))
-        else:
+        """
+        Filtra i canali in base al risultato della ricerca.
+        """
+        if not result:
             self.resetSearch()
+            return
+
+        # items = []
+        self.menu_list = []
+        # items = []
+        # pic = os.path.join(res_plugin_path, 'pic/tv.png')
+        try:
+            auswahl = filter_channels(self.url, result, self.menu_list, show_)
+
+            # # Richiesta HTTP
+            # req = Request(self.url)
+            # req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
+            # r = urlopen(req, None, 15)
+            # content = r.read()
+            # r.close()
+
+            # # Decodifica contenuto
+            # if isinstance(content, bytes):
+                # try:
+                    # content = content.decode("utf-8")
+                # except Exception as e:
+                    # print("Errore nella decodifica del contenuto: %s" % str(e))
+                    # return
+
+            # # Parsing contenuto
+            # regexcat = r"#EXTINF.*?,(.*?)\n(.*?)\n"
+            # match = re.compile(regexcat, re.DOTALL).findall(content)
+            # for name, url in match:
+                # if str(result).lower() in name.lower():
+                    # self.search = True
+                    # name = name.capitalize()
+                    # url = url.replace('\\n', '').strip()
+                    # item = name + "###" + url + '\n'
+                    # if item not in items:
+                        # items.append(item)
+
+            # # Ordinamento e aggiornamento lista
+            # for item in sorted(items):
+                # name, url = item.split("###")
+                # name = name.capitalize()
+                # self.menu_list.append(show_(name, url))
+
+            # self['menulist'].l.setList(self.menu_list)
+
+            # # Aggiornamento selezione corrente
+            # if self.menu_list:
+                # auswahl = self['menulist'].getCurrent()[0][0]
+                # self['name'].setText(str(auswahl))
+            # else:
+                # self['name'].setText('Nessun risultato trovato')
+
+            if self.menu_list:
+                # auswahl = self['menulist'].getCurrent()[0][0]
+                self['name'].setText(str(auswahl))
+            else:
+                self['name'].setText('No results found')
+                self.resetSearch()
+                return
+        except Exception as e:
+            print('Error finder:', e)
+
+        # except (URLError, HTTPError) as e:
+            # print('Errore request URL: %s' % str(e))
+        # except Exception as e:
+            # print('generic Error: %s' % str(e))
 
     def closex(self):
         if search is True:
@@ -746,60 +893,75 @@ class main2(Screen):
         self.updateMenuList()
 
     def updateMenuList(self):
+        """
+        Aggiorna la lista dei canali leggendo i dati da un URL m3u e parsandoli.
+        """
         self.menu_list = []
         items = []
-        pic = os.path.join(res_plugin_path, 'pic/tv.png')
+        default_pic = os.path.join(res_plugin_path, 'pic/tv.png')
         try:
             req = Request(self.url)
             req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
             r = urlopen(req, None, 15)
             content = r.read()
             r.close()
-            if str(type(content)).find('bytes') != -1:
+
+            if isinstance(content, bytes):
                 try:
                     content = content.decode("utf-8")
                 except Exception as e:
-                    print("Error: %s." % str(e))
-            if 'tvg-logo' in content:
-                regexcat = 'EXTINF.*?tvg-logo="(.*?)".*?,(.*?)\\n(.*?)\\n'
-                match = re.compile(regexcat, re.DOTALL).findall(content)
-                for pic, name, url in match:
-                    url = url.replace(' ', '')
-                    url = url.replace('\\n', '')
-                    pic = pic
-                    item = name + "###" + url + '\n'
-                    if item not in items:
-                        items.append(item)
-            else:
-                regexcat = '#EXTINF.*?,(.*?)\\n(.*?)\\n'
-                match = re.compile(regexcat, re.DOTALL).findall(content)
-                for name, url in match:
-                    url = url.replace(' ', '')
-                    url = url.replace('\\n', '')
-                    pic = pic
+                    print("Errore nella decodifica del contenuto: %s" % str(e))
+                    return
 
-                    item = name + "###" + url + '\n'
-                    if item not in items:
-                        items.append(item)
+            regex_with_logo = r'EXTINF.*?tvg-logo="(.*?)".*?,(.*?)\n(.*?)\n'
+            regex_without_logo = r'#EXTINF.*?,(.*?)\n(.*?)\n'
+            match = re.findall(regex_with_logo, content, re.DOTALL) if 'tvg-logo' in content else re.findall(regex_without_logo, content, re.DOTALL)
+
+            for entry in match:
+                if len(entry) == 3:  # Con logo
+                    pic, name, url = entry
+                else:  # Senza logo
+                    pic = default_pic
+                    name, url = entry
+
+                url = url.replace(' ', '').replace('\\n', '').strip()
+                item = name.capitalize() + "###" + url + '\n'
+                if item not in items:
+                    items.append(item)
+
             items.sort()
             for item in items:
-                name = item.split("###")[0]
-                url = item.split("###")[1]
-                name = name.capitalize()
+                name, url = item.split("###")
                 self.menu_list.append(show_(name, url))
-                self['menulist'].l.setList(self.menu_list)
-            auswahl = self['menulist'].getCurrent()[0][0]
-            self['name'].setText(str(auswahl))
+
+            self['menulist'].l.setList(self.menu_list)
+
+            if self.menu_list:
+                auswahl = self['menulist'].getCurrent()[0][0]
+                self['name'].setText(str(auswahl))
+            else:
+                self['name'].setText('Nessun risultato trovato')
+
+        except URLError as e:
+            print("Errore di connessione all'URL: %s" % str(e))
         except Exception as e:
-            print('error ', str(e))
+            print("Errore generico: %s" % str(e))
 
     def ok(self):
-        name = self['menulist'].getCurrent()[0][0]
-        url = self['menulist'].getCurrent()[0][1]
-        self.play_that_shit(name, url)
+        try:
+            i = self['menulist'].getSelectedIndex()
+            self.currentindex = i
+            selection = self['menulist'].l.getCurrentSelection()
+            if selection is not None:
+                item = self.menu_list[i][0]
+                name = item[0]
+                url = item[1]
+            self.play_that_shit(url, name, self.currentindex, item, self.menu_list)
+        except Exception as error:
+            print('error as:', error)
 
-    def play_that_shit(self, name, url):
-        self.session.open(Playstream2, name, url)
+    def play_that_shit(self, url, name, index, item, menu_list):
+        self.session.open(Playstream2, name, url, index, item, menu_list)
 
     def up(self):
         try:
@@ -852,11 +1014,11 @@ class main2(Screen):
         if "radio" in self.name.lower():
             type = "radio"
         name_file = self.name.replace('/', '_').replace(',', '').replace('hasbahca', 'hbc')
-        cleanName = re.sub(r'[\<\>\:\"\/\\\|\?\*]', '_', str(name_file))
-        cleanName = re.sub(r' ', '_', cleanName)
-        cleanName = re.sub(r'\d+:\d+:[\d.]+', '_', cleanName)
-        name_file = re.sub(r'_+', '_', cleanName)
-        bouquetname = 'userbouquet.astv_%s.%s' % (name_file.lower(), type.lower())
+        clean_name = re.sub(r'[\<\>\:\"\/\\\|\?\*]', '_', str(name_file))
+        clean_name = re.sub(r' ', '_', clean_name)
+        clean_name = re.sub(r'\d+:\d+:[\d.]+', '_', clean_name)
+        name_file = re.sub(r'_+', '_', clean_name)
+        bouquet_name = 'userbouquet.astv_%s.%s' % (name_file.lower(), type.lower())
         files = ''
         if os.path.exists(str(dowm3u)):
             files = str(dowm3u) + str(name_file) + '.m3u'
@@ -864,11 +1026,11 @@ class main2(Screen):
             files = '/tmp/' + str(name_file) + '.m3u'
         if os.path.isfile(files):
             os.remove(files)
-        urlm3u = self.url.strip()
+        url_m3u = self.url.strip()
         if PY3:
-            urlm3u.encode()
+            url_m3u.encode()
         import six
-        content = Utils.getUrl(urlm3u)
+        content = Utils.getUrl(url_m3u)
         if six.PY3:
             content = six.ensure_str(content)
         with open(files, 'wb') as f1:
@@ -876,12 +1038,13 @@ class main2(Screen):
             f1.close()
         sleep(5)
         ch = 0
+
         try:
             if os.path.isfile(files) and os.stat(files).st_size > 0:
                 print('ChannelList is_tmp exist in playlist')
                 desk_tmp = ''
                 in_bouquets = 0
-                with open('%s%s' % (enigma_path, bouquetname), 'w') as outfile:
+                with open('%s%s' % (enigma_path, bouquet_name), 'w') as outfile:
                     outfile.write('#NAME %s\r\n' % name_file.capitalize())
                     for line in open(files):
                         if line.startswith('http://') or line.startswith('https'):
@@ -901,19 +1064,19 @@ class main2(Screen):
                     outfile.close()
                 if os.path.isfile('/etc/enigma2/bouquets.tv'):
                     for line in open('/etc/enigma2/bouquets.tv'):
-                        if bouquetname in line:
+                        if bouquet_name in line:
                             in_bouquets = 1
                     if in_bouquets == 0:
-                        if os.path.isfile('%s%s' % (enigma_path, bouquetname)) and os.path.isfile('/etc/enigma2/bouquets.tv'):
-                            Utils.remove_line('/etc/enigma2/bouquets.tv', bouquetname)
+                        if os.path.isfile('%s%s' % (enigma_path, bouquet_name)) and os.path.isfile('/etc/enigma2/bouquets.tv'):
+                            Utils.remove_line('/etc/enigma2/bouquets.tv', bouquet_name)
                             with open('/etc/enigma2/bouquets.tv', 'a+') as outfile:
-                                outfile.write('#SERVICE 1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "%s" ORDER BY bouquet\r\n' % bouquetname)
+                                outfile.write('#SERVICE 1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "%s" ORDER BY bouquet\r\n' % bouquet_name)
                                 outfile.close()
                                 in_bouquets = 1
                     Utils.ReloadBouquets()
             return ch
         except Exception as e:
-            print('error convert iptv ', e)
+            print('error convert iptv ', str(e))
 
 
 class TvInfoBarShowHide():
@@ -1023,7 +1186,7 @@ class Playstream2(
     ALLOW_SUSPEND = True
     screen_timeout = 5000
 
-    def __init__(self, session, name, url):
+    def __init__(self, session, name, url, index, item, menu_list):
         global streaml
         Screen.__init__(self, session)
         self.session = session
@@ -1044,31 +1207,47 @@ class Playstream2(
         self.new_aspect = self.init_aspect
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
         self.service = None
+
         self.name = html_conv.html_unescape(name)
         self.url = url
+        self.menu_list = menu_list
+        self.current_channel_index = index
+        self.item = item
+        self.itemscount = len(menu_list)
         self.state = self.STATE_PLAYING
-        self['actions'] = ActionMap(['MoviePlayerActions',
-                                     'MovieSelectionActions',
-                                     'MediaPlayerActions',
-                                     'EPGSelectActions',
-                                     'MediaPlayerSeekActions',
-                                     'ColorActions',
-                                     'ButtonSetupActions',
-                                     'OkCancelActions',
-                                     'InfobarShowHideActions',
-                                     'InfobarActions',
-                                     'InfobarSeekActions'], {'leavePlayer': self.cancel,
-                                                             'epg': self.showIMDB,
-                                                             'info': self.showIMDB,
-                                                             'tv': self.cicleStreamType,
-                                                             'stop': self.leavePlayer,
-                                                             'playpauseService': self.playpauseService,
-                                                             'red': self.cicleStreamType,
-                                                             'cancel': self.cancel,
-                                                             'exit': self.leavePlayer,
-                                                             'yellow': self.subtitles,
-                                                             'back': self.cancel,
-                                                             'down': self.av}, -1)
+        self['actions'] = ActionMap(
+             ['ChannelSelectBaseActions',
+             # 'HotkeyActions',
+             'ButtonSetupActions',
+             'ColorActions',
+             # 'EPGSelectActions',
+             'InfobarActions',
+             'InfobarEPGActions',
+             'InfobarSeekActions',
+             'InfobarShowHideActions',
+             # 'MediaPlayerActions',
+             'MoviePlayerActions',
+             'MediaPlayerSeekActions',
+             'MovieSelectionActions',
+             'OkCancelActions'],
+            {
+                'leavePlayer': self.cancel,
+                'prevBouquet': self.keyDown,
+                'nextBouquet': self.keyUp,
+                'epg': self.showIMDB,
+                'info': self.showIMDB,
+                'tv': self.cicleStreamType,
+                'stop': self.leavePlayer,
+                'playpauseService': self.playpauseService,
+                'red': self.cicleStreamType,
+                'cancel': self.cancel,
+                'exit': self.leavePlayer,
+                'yellow': self.subtitles,
+                'back': self.cancel,
+                'keyUDown': self.keyDown,  # Aggiungi l'azione per 'down'
+                'keyUp': self.keyUp,  # Aggiungi l'azione per 'up'
+            }, -1)
+
         if '8088' in str(self.url):
             # self.onLayoutFinish.append(self.slinkPlay)
             self.onFirstExecBegin.append(self.slinkPlay)
@@ -1078,11 +1257,11 @@ class Playstream2(
         self.onClose.append(self.cancel)
 
     def getAspect(self):
-        """Ottiene l'attuale impostazione del rapporto d'aspetto."""
+        """Get the current aspect ratio setting."""
         return AVSwitch().getAspectRatioSetting()
 
     def getAspectString(self, aspectnum):
-        """Restituisce la stringa corrispondente al valore numerico del rapporto d'aspetto."""
+        """Return the string corresponding to the numerical value of the aspect ratio."""
         aspect_map = {
             0: '4:3 Letterbox',
             1: '4:3 PanScan',
@@ -1095,7 +1274,7 @@ class Playstream2(
         return aspect_map.get(aspectnum, "Unknown Aspect")
 
     def setAspect(self, aspect):
-        """Imposta un nuovo rapporto d'aspetto, se valido."""
+        """Set a new aspect ratio if the value is valid."""
         aspect_map = {
             0: '4_3_letterbox',
             1: '4_3_panscan',
@@ -1105,15 +1284,16 @@ class Playstream2(
             5: '16_10_panscan',
             6: '16_9_letterbox'
         }
-        # Verifica se l'aspect fornito è valido
+        # Validate the provided aspect
         if aspect in aspect_map:
             config.av.aspectratio.setValue(aspect_map[aspect])
             try:
                 AVSwitch().setAspectRatio(aspect)
             except Exception as e:
-                print("Errore nell'impostare il rapporto d'aspetto: %s" % str(e))
+                print("Error setting aspect ratio: %s" % str(e))
 
     def av(self):
+        """Cycle through aspect ratio settings."""
         temp = int(self.getAspect())
         temp += 1
         if temp > 6:
@@ -1156,43 +1336,37 @@ class Playstream2(
     def subtitles(self):
         self.session.open(MessageBox, _('Please install SubSupport Plugins'), MessageBox.TYPE_ERROR, timeout=10)
 
+    def keyUp(self):
+        currentindex = int(self.current_channel_index) + 1
+        if currentindex == self.itemscount:
+            currentindex = 0
+        self.current_channel_index = currentindex
+        i = self.current_channel_index
+        item = self.menu_list[i][0]
+        self.name = item[0]
+        self.url = item[1]
+        self.cicleStreamType()
+
+    def keyDown(self):
+        currentindex = int(self.current_channel_index) - 1
+        if currentindex < 0:
+            currentindex = self.itemscount - 1
+        self.current_channel_index = currentindex
+        i = self.current_channel_index
+        item = self.menu_list[i][0]
+        self.name = item[0]
+        self.url = item[1]
+        self.cicleStreamType()
+
     def cicleStreamType(self):
-        global streaml
-        streaml = False
-        from itertools import cycle, islice
         self.servicetype = '4097'
-        print('servicetype1: ', self.servicetype)
+        if not self.url.startswith('http'):
+            self.url = 'http://' + self.url
         url = str(self.url)
         if str(os.path.splitext(self.url)[-1]) == ".m3u8":
             if self.servicetype == "1":
                 self.servicetype = "4097"
-        currentindex = 0
-        streamtypelist = ["4097"]
-        '''
-        if Utils.isStreamlinkAvailable():
-            streamtypelist.append("5002")  # ref = '5002:0:1:0:0:0:0:0:0:0:http%3a//127.0.0.1%3a8088/' + url
-            streaml = True
-        if os.path.exists("/usr/bin/gstplayer"):
-            streamtypelist.append("5001")
-        if os.path.exists("/usr/bin/exteplayer3"):
-            streamtypelist.append("5002")
-        '''
-        if os.path.exists("/usr/bin/apt-get"):
-            streamtypelist.append("8193")
-        for index, item in enumerate(streamtypelist, start=0):
-            if str(item) == str(self.servicetype):
-                currentindex = index
-                break
-        nextStreamType = islice(cycle(streamtypelist), currentindex + 1, None)
-        self.servicetype = str(next(nextStreamType))
-        print('servicetype2: ', self.servicetype)
         self.openTest(self.servicetype, url)
-
-    def up(self):
-        pass
-
-    def down(self):
-        self.up()
 
     def doEofInternal(self, playing):
         self.close()

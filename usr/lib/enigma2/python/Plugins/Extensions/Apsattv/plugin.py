@@ -119,24 +119,28 @@ if exists('/usr/bin/apt-get'):
 
 def pngassign(name):
 	name_lower = name.lower()
-	png = join(res_plugin_path, 'pic/tv.png')  # immagine predefinita
+	png = join(res_plugin_path, "pic/tv.png")  # default image
 
 	categories = {
-		'webcam': ['webcam'],
-		'music': ['music', 'mtv', 'deluxe', 'djing', 'fashion', 'kiss', 'sluhay',
-				  'stingray', 'techno', 'viva', 'country', 'vevo'],
-		'sport': ['spor', 'boxing', 'racing', 'fight', 'golf', 'knock', 'harley',
-				  'futbool', 'motor', 'nba', 'nfl', 'bull', 'poker', 'billiar', 'fite'],
-		'xxx': ['adult', 'xxx'],
-		'relax': ['relax', 'nature', 'escape'],
-		'weather': ['weather'],
-		'radio': ['radio'],
-		'family': ['family'],
-		'religious': ['religious'],
-		'shop': ['shop'],
-		'movie': ['movie'],
-		'plutotv': ['pluto'],
-		'tvplus': ['tvplus']
+		"webcam": ["webcam"],
+		"music": [
+			"music", "mtv", "deluxe", "djing", "fashion", "kiss", "sluhay",
+			"stingray", "techno", "viva", "country", "vevo"
+		],
+		"sport": [
+			"spor", "boxing", "racing", "fight", "golf", "knock", "harley",
+			"futbool", "motor", "nba", "nfl", "bull", "poker", "billiar", "fite"
+		],
+		"xxx": ["adult", "xxx"],
+		"relax": ["relax", "nature", "escape"],
+		"weather": ["weather"],
+		"radio": ["radio"],
+		"family": ["family"],
+		"religious": ["religious"],
+		"shop": ["shop"],
+		"movie": ["movie"],
+		"plutotv": ["pluto"],
+		"tvplus": ["tvplus"]
 	}
 
 	for category, keywords in categories.items():
@@ -215,37 +219,31 @@ def show_(name, link):
 
 
 def returnIMDB(text_clear):
-	TMDB = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('TMDB'))
-	tmdb = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('tmdb'))
-	IMDb = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('IMDb'))
 	text = html_conv.html_unescape(text_clear)
-	if exists(TMDB):
+
+	if Utils.is_TMDB and Utils.TMDB:
 		try:
-			from Plugins.Extensions.TMBD.plugin import TMBD
-			_session.open(TMBD.tmdbScreen, text, 0)
+			_session.open(Utils.TMDB.tmdbScreen, text, 0)
 		except Exception as e:
-			print("[XCF] Tmdb: ", str(e))
+			print("[XCF] TMDB error:", str(e))
 		return True
 
-	elif exists(tmdb):
+	elif Utils.is_tmdb and Utils.tmdb:
 		try:
-			from Plugins.Extensions.tmdb.plugin import tmdb
-			_session.open(tmdb.tmdbScreen, text, 0)
+			_session.open(Utils.tmdb.tmdbScreen, text, 0)
 		except Exception as e:
-			print("[XCF] Tmdb: ", str(e))
+			print("[XCF] tmdb error:", str(e))
 		return True
 
-	elif exists(IMDb):
+	elif Utils.is_imdb and Utils.imdb:
 		try:
-			from Plugins.Extensions.IMDb.plugin import main as imdb
-			imdb(_session, text)
+			Utils.imdb(_session, text)
 		except Exception as e:
-			print("[XCF] imdb: ", str(e))
+			print("[XCF] IMDb error:", str(e))
 		return True
-	else:
-		_session.open(MessageBox, text, MessageBox.TYPE_INFO)
-		return True
-	return False
+
+	_session.open(MessageBox, text, MessageBox.TYPE_INFO)
+	return True
 
 
 def filter_channels(url, result, menu_list, show_):
@@ -320,11 +318,13 @@ class Apsattv(Screen):
 		self['name'] = Label('')
 		self.Update = False
 		self['actions'] = ActionMap(
-			['OkCancelActions',
-			 'DirectionActions',
-			 'HotkeyActions',
-			 'InfobarEPGActions',
-			 'ChannelSelectBaseActions'],
+			[
+				'OkCancelActions',
+				'DirectionActions',
+				'HotkeyActions',
+				'InfobarEPGActions',
+				'ChannelSelectBaseActions'
+			],
 			{
 				'up': self.up,
 				'down': self.down,
@@ -746,10 +746,12 @@ class main2(Screen):
 		self['title'] = Label("Thank's Apsattv")
 		self['name'] = Label('')
 		self['actions'] = ActionMap(
-			['OkCancelActions',
-			 'ColorActions',
-			 'ButtonSetupActions',
-			 'DirectionActions'],
+			[
+				'OkCancelActions',
+				'ColorActions',
+				'ButtonSetupActions',
+				'DirectionActions'
+			],
 			{
 				'up': self.up,
 				'down': self.down,
@@ -761,7 +763,8 @@ class main2(Screen):
 				'cancel': self.closex,
 				'red': self.closex
 			},
-			-1)
+			-1
+		)
 
 		self.timer = eTimer()
 		if exists('/usr/bin/apt-get'):
@@ -1131,15 +1134,16 @@ class Playstream2(
 		self.state = self.STATE_PLAYING
 		self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
 		"""Initialize infobar components."""
-		for x in InfoBarBase, \
-				InfoBarMenu, \
-				InfoBarSeek, \
-				InfoBarAudioSelection, \
-				InfoBarSubtitleSupport, \
-				InfoBarNotifications, \
-				TvInfoBarShowHide:
+		for x in (
+			InfoBarBase,
+			InfoBarMenu,
+			InfoBarSeek,
+			InfoBarAudioSelection,
+			InfoBarSubtitleSupport,
+			InfoBarNotifications,
+			TvInfoBarShowHide,
+		):
 			x.__init__(self)
-
 		self.service = None
 		self['actions'] = ActionMap(
 			[

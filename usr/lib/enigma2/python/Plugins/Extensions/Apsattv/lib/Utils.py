@@ -15,6 +15,7 @@ import re
 import requests
 import ssl
 import sys
+import six
 
 requests.packages.urllib3.disable_warnings(
 	requests.packages.urllib3.exceptions.InsecureRequestWarning)
@@ -738,8 +739,11 @@ def __createdir(list):
 
 
 is_tmdb = False
+is_TMDB = False
 is_imdb = False
+
 tmdb = None
+TMDB = None
 imdb = None
 
 try:
@@ -754,12 +758,24 @@ try:
 except Exception as e:
 	print("error:", e)
 
+try:
+	from Plugins.Extensions.TMDB import TMDB
+	is_TMDB = True
+except Exception as e:
+	print("error:", e)
+
+
 print("is_tmdb =", is_tmdb)
+print("is_TMDB =", is_TMDB)
 print("is_imdb =", is_imdb)
+
 
 # Utilizzo "dummy" per evitare il warning W0611
 if is_tmdb:
 	tmdb  # Dummy usage
+
+if is_TMDB:
+	TMDB  # Dummy usage
 
 if is_imdb:
 	imdb  # Dummy usage
@@ -1274,61 +1290,59 @@ def get_safe_filename(filename, fallback=''):
 
 
 def decodeHtml(text):
-	# List of HTML and Unicode entities to replace
-	import six
-	if six.PY2:
-		from six.moves import (html_parser)
-		h = html_parser.HTMLParser()
-		text = h.unescape(text.decode('utf8')).encode('utf8')
-	else:
-		import html
-		text = html.unescape(text)
+    if PY2:
+        from six.moves import html_parser
+        h = html_parser.HTMLParser()
+        text = h.unescape(text.decode("utf8")).encode("utf8")
+    else:
+        import html
+        text = html.unescape(text)
 
-	charlist = [
-		('&#034;', '"'), ('&#038;', '&'), ('&#039;', "'"), ('&#060;', ' '),
-		('&#062;', ' '), ('&#160;', ' '), ('&#174;', ''), ('&#192;', 'À'),
-		('&#193;', 'Á'), ('&#194;', 'Â'), ('&#196;', 'Ä'), ('&#204;', 'Ì'),
-		('&#205;', 'Í'), ('&#206;', 'Î'), ('&#207;', 'Ï'), ('&#210;', 'Ò'),
-		('&#211;', 'Ó'), ('&#212;', 'Ô'), ('&#214;', 'Ö'), ('&#217;', 'Ù'),
-		('&#218;', 'Ú'), ('&#219;', 'Û'), ('&#220;', 'Ü'), ('&#223;', 'ß'),
-		('&#224;', 'à'), ('&#225;', 'á'), ('&#226;', 'â'), ('&#228;', 'ä'),
-		('&#232;', 'è'), ('&#233;', 'é'), ('&#234;', 'ê'), ('&#235;', 'ë'),
-		('&#236;', 'ì'), ('&#237;', 'í'), ('&#238;', 'î'), ('&#239;', 'ï'),
-		('&#242;', 'ò'), ('&#243;', 'ó'), ('&#244;', 'ô'), ('&#246;', 'ö'),
-		('&#249;', 'ù'), ('&#250;', 'ú'), ('&#251;', 'û'), ('&#252;', 'ü'),
-		('&#8203;', ''), ('&#8211;', '-'), ('&#8212;', '—'), ('&#8216;', "'"),
-		('&#8217;', "'"), ('&#8220;', '"'), ('&#8221;', '"'), ('&#8222;', ','),
-		('&#8230;', '...'), ('&#x21;', '!'), ('&#x26;', '&'), ('&#x27;', "'"),
-		('&#x3f;', '?'), ('&#xB7;', '·'), ('&#xC4;', 'Ä'), ('&#xD6;', 'Ö'),
-		('&#xDC;', 'Ü'), ('&#xDF;', 'ß'), ('&#xE4;', 'ä'), ('&#xE9;', 'é'),
-		('&#xF6;', 'ö'), ('&#xF8;', 'ø'), ('&#xFB;', 'û'), ('&#xFC;', 'ü'),
-		('&8221;', '”'), ('&8482;', '™'), ('&Aacute;', 'Á'), ('&Acirc;', 'Â'),
-		('&Agrave;', 'À'), ('&Auml;', 'Ä'), ('&Iacute;', 'Í'), ('&Icirc;', 'Î'),
-		('&Igrave;', 'Ì'), ('&Iuml;', 'Ï'), ('&Oacute;', 'Ó'), ('&Ocirc;', 'Ô'),
-		('&Ograve;', 'Ò'), ('&Ouml;', 'Ö'), ('&Uacute;', 'Ú'), ('&Ucirc;', 'Û'),
-		('&Ugrave;', 'Ù'), ('&Uuml;', 'Ü'), ('&aacute;', 'á'), ('&acirc;', 'â'),
-		('&acute;', "'"), ('&agrave;', 'à'), ('&amp;', '&'), ('&apos;', "'"),
-		('&auml;', 'ä'), ('&bdquo;', '"'), ('&eacute;', 'é'), ('&ecirc;', 'ê'),
-		('&egrave;', 'è'), ('&euml;', 'ë'), ('&gt;', '>'), ('&hellip;', '...'),
-		('&iacute;', 'í'), ('&icirc;', 'î'), ('&igrave;', 'ì'), ('&iuml;', 'ï'),
-		('&laquo;', '"'), ('&ldquo;', '"'), ('&lsquo;', "'"), ('&lt;', '<'),
-		('&mdash;', '—'), ('&nbsp;', ' '), ('&ndash;', '-'), ('&oacute;', 'ó'),
-		('&ocirc;', 'ô'), ('&ograve;', 'ò'), ('&ouml;', 'ö'), ('&quot;', '"'),
-		('&raquo;', '"'), ('&rsquo;', "'"), ('&szlig;', 'ß'), ('&uacute;', 'ú'),
-		('&ucirc;', 'û'), ('&ugrave;', 'ù'), ('&uuml;', 'ü'), ('&ntilde;', '~'),
-		('&equals;', '='), ('&quest;', '?'), ('&comma;', ','), ('&period;', '.'),
-		('&colon;', ':'), ('&lpar;', '('), ('&rpar;', ')'), ('&excl;', '!'),
-		('&dollar;', '$'), ('&num;', '#'), ('&ast;', '*'), ('&lowbar;', '_'),
-		('&lsqb;', '['), ('&rsqb;', ']'), ('&half;', '1/2'), ('&DiacriticalTilde;', '~'),
-		('&OpenCurlyDoubleQuote;', '"'), ('&CloseCurlyDoubleQuote;', '"'),
-	]
+    charlist = [
+        ("&#034;", '"'), ("&#038;", '&'), ("&#039;", "'"), ("&#060;", ' '),
+        ("&#062;", ' '), ("&#160;", ' '), ("&#174;", ''), ("&#192;", 'À'),
+        ("&#193;", 'Á'), ("&#194;", 'Â'), ("&#196;", 'Ä'), ("&#204;", 'Ì'),
+        ("&#205;", 'Í'), ("&#206;", 'Î'), ("&#207;", 'Ï'), ("&#210;", 'Ò'),
+        ("&#211;", 'Ó'), ("&#212;", 'Ô'), ("&#214;", 'Ö'), ("&#217;", 'Ù'),
+        ("&#218;", 'Ú'), ("&#219;", 'Û'), ("&#220;", 'Ü'), ("&#223;", 'ß'),
+        ("&#224;", 'à'), ("&#225;", 'á'), ("&#226;", 'â'), ("&#228;", 'ä'),
+        ("&#232;", 'è'), ("&#233;", 'é'), ("&#234;", 'ê'), ("&#235;", 'ë'),
+        ("&#236;", 'ì'), ("&#237;", 'í'), ("&#238;", 'î'), ("&#239;", 'ï'),
+        ("&#242;", 'ò'), ("&#243;", 'ó'), ("&#244;", 'ô'), ("&#246;", 'ö'),
+        ("&#249;", 'ù'), ("&#250;", 'ú'), ("&#251;", 'û'), ("&#252;", 'ü'),
+        ("&#8203;", ''), ("&#8211;", '-'), ("&#8212;", '—'), ("&#8216;", "'"),
+        ("&#8217;", "'"), ("&#8220;", '"'), ("&#8221;", '"'), ("&#8222;", ','),
+        ("&#8230;", '...'), ("&#x21;", '!'), ("&#x26;", '&'), ("&#x27;", "'"),
+        ("&#x3f;", '?'), ("&#xB7;", '·'), ("&#xC4;", 'Ä'), ("&#xD6;", 'Ö'),
+        ("&#xDC;", 'Ü'), ("&#xDF;", 'ß'), ("&#xE4;", 'ä'), ("&#xE9;", 'é'),
+        ("&#xF6;", 'ö'), ("&#xF8;", 'ø'), ("&#xFB;", 'û'), ("&#xFC;", 'ü'),
+        ("&8221;", '”'), ("&8482;", '™'), ("&Aacute;", 'Á'), ("&Acirc;", 'Â'),
+        ("&Agrave;", 'À'), ("&Auml;", 'Ä'), ("&Iacute;", 'Í'), ("&Icirc;", 'Î'),
+        ("&Igrave;", 'Ì'), ("&Iuml;", 'Ï'), ("&Oacute;", 'Ó'), ("&Ocirc;", 'Ô'),
+        ("&Ograve;", 'Ò'), ("&Ouml;", 'Ö'), ("&Uacute;", 'Ú'), ("&Ucirc;", 'Û'),
+        ("&Ugrave;", 'Ù'), ("&Uuml;", 'Ü'), ("&aacute;", 'á'), ("&acirc;", 'â'),
+        ("&acute;", "'"), ("&agrave;", 'à'), ("&amp;", '&'), ("&apos;", "'"),
+        ("&auml;", 'ä'), ("&bdquo;", '"'), ("&eacute;", 'é'), ("&ecirc;", 'ê'),
+        ("&egrave;", 'è'), ("&euml;", 'ë'), ("&gt;", '>'), ("&hellip;", '...'),
+        ("&iacute;", 'í'), ("&icirc;", 'î'), ("&igrave;", 'ì'), ("&iuml;", 'ï'),
+        ("&laquo;", '"'), ("&ldquo;", '"'), ("&lsquo;", "'"), ("&lt;", '<'),
+        ("&mdash;", '—'), ("&nbsp;", ' '), ("&ndash;", '-'), ("&oacute;", 'ó'),
+        ("&ocirc;", 'ô'), ("&ograve;", 'ò'), ("&ouml;", 'ö'), ("&quot;", '"'),
+        ("&raquo;", '"'), ("&rsquo;", "'"), ("&szlig;", 'ß'), ("&uacute;", 'ú'),
+        ("&ucirc;", 'û'), ("&ugrave;", 'ù'), ("&uuml;", 'ü'), ("&ntilde;", '~'),
+        ("&equals;", '='), ("&quest;", '?'), ("&comma;", ','), ("&period;", '.'),
+        ("&colon;", ':'), ("&lpar;", '('), ("&rpar;", ')'), ("&excl;", '!'),
+        ("&dollar;", '$'), ("&num;", '#'), ("&ast;", '*'), ("&lowbar;", '_'),
+        ("&lsqb;", '['), ("&rsqb;", ']'), ("&half;", '1/2'),
+        ("&DiacriticalTilde;", '~'), ("&OpenCurlyDoubleQuote;", '"'),
+        ("&CloseCurlyDoubleQuote;", '"'),
+    ]
 
-	# Replacing all HTML entities with their respective characters
-	for repl in charlist:
-		text = text.replace(repl[0], repl[1])
-	# Remove any remaining HTML tags
-	text = re.sub('<[^>]+>', '', text)
-	return text.strip()
+    for old, new in charlist:
+        text = text.replace(old, new)
+
+    text = re.sub("<[^>]+>", "", text)
+    return text.strip()
 
 
 conversion = {

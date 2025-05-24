@@ -93,7 +93,7 @@ else:
 	from urllib2 import URLError, HTTPError
 
 
-currversion = '1.3'
+currversion = '1.4'
 name_plugin = 'Apsattv Plugin'
 desc_plugin = ('..:: Apsat Tv International Channel List V. %s ::.. ' % currversion)
 PLUGIN_PATH = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('Apsattv'))
@@ -105,16 +105,29 @@ dowm3u = '/media/hdd/movie/'
 enigma_path = '/etc/enigma2/'
 Panel_list = [('PLAYLISTS ONLINE')]
 
-screen_width = getDesktop(0).size()
-if screen_width == 2560:
+screen_size = getDesktop(0).size()
+screen_width = screen_size.width()
+if screen_width > 1920:
 	skin_path = join(PLUGIN_PATH, 'skin/uhd')
-elif screen_width == 1920:
+elif screen_width > 1280:
 	skin_path = join(PLUGIN_PATH, 'skin/fhd')
 else:
 	skin_path = PLUGIN_PATH + '/skin/hd'
 
 if exists('/usr/bin/apt-get'):
 	skin_path = join(skin_path, 'dreamOs')
+
+
+# log
+def trace_error():
+	import traceback
+	import sys
+	try:
+		traceback.print_exc(file=sys.stdout)
+		with open("/tmp/vavoo.log", "a", encoding='utf-8') as log_file:
+			traceback.print_exc(file=log_file)
+	except Exception as e:
+		print("Failed to log the error:", e, file=sys.stderr)
 
 
 def pngassign(name):
@@ -619,11 +632,11 @@ class selectplay(Screen):
 					print("Error decoding content: %s" % str(e))
 					return
 
-			regexcat = r'https://www.apsattv.com/(.+?).m3u<'
+			regexcat = r'https://www\.apsattv\.com/(.+?\.m3u)'
 			match = compile(regexcat, DOTALL).findall(content)
 
 			for name in match:
-				url = 'https://www.apsattv.com/' + name + '.m3u'
+				url = 'https://www.apsattv.com/' + name  # + '.m3u'
 				name = name.capitalize()
 				item = name + "###" + url + '\n'
 				items.append(item)
@@ -1012,6 +1025,7 @@ class TvInfoBarShowHide():
 	STATE_HIDING = 1
 	STATE_SHOWING = 2
 	STATE_SHOWN = 3
+	FLAG_CENTER_DVB_SUBS = 2048
 	skipToggleShow = False
 
 	def __init__(self):
@@ -1047,15 +1061,16 @@ class TvInfoBarShowHide():
 
 	def serviceStarted(self):
 		if self.execing:
-			if config.usage.show_infobar_on_zap.value:
-				self.doShow()
+			# if config.usage.show_infobar_on_zap.value:
+			self.doShow()
 
 	def startHideTimer(self):
 		if self.__state == self.STATE_SHOWN and not self.__locked:
 			self.hideTimer.stop()
-			idx = config.usage.infobar_timeout.index
-			if idx:
-				self.hideTimer.start(idx * 1500, True)
+			self.hideTimer.start(3000, True)
+		elif hasattr(self, "pvrStateDialog"):
+			self.hideTimer.stop()
+		self.skipToggleShow = False
 
 	def doShow(self):
 		self.hideTimer.stop()
@@ -1125,6 +1140,11 @@ class Playstream2(
 		self.session = session
 		self.skinName = 'MoviePlayer'
 		streaml = False
+
+		self.stream_running = False
+		self.is_streaming = False  # Added here
+		self.currentindex = index
+
 		self.current_channel_index = index
 		self.item = item
 		self.itemscount = len(menu_list)
@@ -1172,6 +1192,10 @@ class Playstream2(
 				'cancel': self.cancel,
 				'exit': self.leavePlayer,
 				'yellow': self.subtitles,
+				"channelDown": self.previousitem,
+				"channelUp": self.nextitem,
+				"down": self.previousitem,
+				"up": self.nextitem,
 				'back': self.cancel,
 				'keyUDown': self.keyDown,
 				'keyUp': self.keyUp,
@@ -1179,13 +1203,54 @@ class Playstream2(
 			-1
 		)
 
-		if '8088' in str(self.url):
-			# self.onLayoutFinish.append(self.slinkPlay)
-			self.onFirstExecBegin.append(self.slinkPlay)
-		else:
-			# self.onLayoutFinish.append(self.cicleStreamType)
-			self.onFirstExecBegin.append(self.cicleStreamType)
+		self.onFirstExecBegin.append(lambda: self.startStream(force=True))
 		self.onClose.append(self.cancel)
+
+	def nextitem(self):
+		self.stopStream()
+		currentindex = int(self.currentindex) + 1
+		if currentindex == self.itemscount:
+			currentindex = 0
+		self.currentindex = currentindex
+		i = self.currentindex
+		item = self.menu_list[i][0]
+		self.name = item[0]
+		self.url = item[1]
+		self.startStream()
+
+	def previousitem(self):
+		self.stopStream()
+		currentindex = int(self.currentindex) - 1
+		if currentindex < 0:
+			currentindex = self.itemscount - 1
+		self.currentindex = currentindex
+		i = self.currentindex
+		item = self.menu_list[i][0]
+		self.name = item[0]
+		self.url = item[1]
+		self.startStream()
+
+	def startStream(self, force=False):
+		if self.stream_running and not force:
+			trace_error()
+			return
+
+		self.stream_running = True
+		self.is_streaming = True  # Added here
+		self.cicleStreamType()
+
+	def stopStream(self):
+		if self.stream_running:
+			self.stream_running = False
+			self.is_streaming = False  # Reset here as well
+			print("Stream stopped and state reset.")
+			self.session.nav.stopService()
+			self.session.nav.playService(self.srefInit)
+			# Stop the refresh timer when the stream is stopped
+			if hasattr(self, "refreshTimer") and self.refreshTimer:
+				self.refreshTimer.stop()
+		else:
+			print("No active stream to stop.")
 
 	def showIMDB(self):
 		try:
@@ -1199,20 +1264,6 @@ class Playstream2(
 	def slinkPlay(self, url):
 		name = self.name
 		ref = "{0}:{1}".format(url.replace(":", "%3a"), name.replace(":", "%3a"))
-		print('final reference:   ', ref)
-		sref = eServiceReference(ref)
-		sref.setName(str(name))
-		self.session.nav.stopService()
-		self.session.nav.playService(sref)
-
-	def openTest(self, servicetype, url):
-		name = self.name
-		ref = "{0}:0:1:0:0:0:0:0:0:0:{1}:{2}".format(servicetype, url.replace(":", "%3a"), name.replace(":", "%3a"))
-		print('reference:   ', ref)
-		if streaml is True:
-			url = 'http://127.0.0.1:8088/' + str(url)
-			ref = "{0}:0:1:0:0:0:0:0:0:0:{1}:{2}".format(servicetype, url.replace(":", "%3a"), name.replace(":", "%3a"))
-			print('streaml reference:   ', ref)
 		print('final reference:   ', ref)
 		sref = eServiceReference(ref)
 		sref.setName(str(name))
@@ -1245,14 +1296,24 @@ class Playstream2(
 		self.cicleStreamType()
 
 	def cicleStreamType(self):
-		self.servicetype = '4097'
-		if not self.url.startswith('http'):
-			self.url = 'http://' + self.url
-		url = str(self.url)
+		self.servicetype = "4097"
+		if not self.url.startswith("http"):
+			self.url = "http://" + self.url
 		if str(splitext(self.url)[-1]) == ".m3u8":
 			if self.servicetype == "1":
 				self.servicetype = "4097"
-		self.openTest(self.servicetype, url)
+		self.openTest(self.servicetype)
+
+	def openTest(self, servicetype):
+		name = self.name
+		url = self.url
+		ref = "{0}:0:0:0:0:0:0:0:0:0:{1}:{2}".format(servicetype, url.replace(":", "%3a"), name.replace(":", "%3a"))
+		print('final reference:', ref)
+		sref = eServiceReference(ref)
+		self.sref = sref
+		self.sref.setName(name)
+		self.session.nav.stopService()
+		self.session.nav.playService(self.sref)
 
 	def doEofInternal(self, playing):
 		self.close()
@@ -1272,15 +1333,20 @@ class Playstream2(
 			self.doShow()
 
 	def cancel(self):
-		if exists('/tmp/hls.avi'):
-			remove('/tmp/hls.avi')
+		self.stream_running = False
+		self.is_streaming = False  # Reset here
+
+		if isfile("/tmp/hls.avi"):
+			remove("/tmp/hls.avi")
 		self.session.nav.stopService()
 		self.session.nav.playService(self.srefInit)
-		aspect_manager.restore_aspect()
+
+		aspect_manager.restore_aspect()  # Restore aspect on exit
 		self.close()
 
 	def leavePlayer(self):
-		self.cancel()
+		self.stopStream()
+		self.close()
 
 
 def main(session, **kwargs):

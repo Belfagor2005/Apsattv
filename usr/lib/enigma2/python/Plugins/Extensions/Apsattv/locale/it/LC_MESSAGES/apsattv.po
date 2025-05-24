@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Apsattv\n"
-"POT-Creation-Date: 2025-05-14 20:45+0200\n"
+"POT-Creation-Date: 2025-05-24 14:53+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: lululla\n"
@@ -14,20 +14,20 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: plugin.py\n"
 
-#: plugin.py:314 plugin.py:521
+#: plugin.py:325 plugin.py:534
 msgid "Exit"
 msgstr "Esci"
 
-#: plugin.py:316
+#: plugin.py:327
 msgid "Update"
 msgstr "Aggiorna"
 
-#: plugin.py:392
+#: plugin.py:405
 #, python-format
 msgid "Error checking version: %s"
 msgstr "Errore durante il controllo della versione: %s"
 
-#: plugin.py:401
+#: plugin.py:414
 #, python-format
 msgid ""
 "New version %s is available\n"
@@ -42,7 +42,7 @@ msgstr ""
 "\n"
 "Premere info_long o yellow_long pulsante per avviare l'aggiornamento forzato."
 
-#: plugin.py:408
+#: plugin.py:421
 #, python-format
 msgid ""
 "New version %s is available.\n"
@@ -57,48 +57,48 @@ msgstr ""
 "\n"
 "Vuoi installarla ora?"
 
-#: plugin.py:410
+#: plugin.py:423
 msgid "Congrats! You already have the latest version..."
 msgstr "Congratulazioni! Hai già l'ultima versione..."
 
-#: plugin.py:423
+#: plugin.py:436
 #, python-format
 msgid "Do you want to install update ( %s ) now?"
 msgstr "Vuoi installare l'aggiornamento ( %s ) ora?"
 
-#: plugin.py:432
+#: plugin.py:445
 msgid "Update Aborted!"
 msgstr "Aggiornamento Annullato!"
 
-#: plugin.py:522 plugin.py:563 plugin.py:741
+#: plugin.py:535 plugin.py:576 plugin.py:754
 msgid "Search"
 msgstr "Cerca"
 
-#: plugin.py:524
+#: plugin.py:537
 msgid "Remove Bouquet"
 msgstr "Rimuovi Bouquet"
 
-#: plugin.py:685
+#: plugin.py:698
 msgid "Remove all APSATTV Favorite Bouquet?"
 msgstr "Rimuovere le liste canali favorite di APSATTV?"
 
-#: plugin.py:709
+#: plugin.py:722
 msgid "APSATTV Favorites List have been removed"
 msgstr "Liste canali Favorite APSATTV rimosse"
 
-#: plugin.py:740
+#: plugin.py:753
 msgid "Back"
 msgstr "Indietro"
 
-#: plugin.py:742
+#: plugin.py:755
 msgid "Export"
 msgstr "Esporta"
 
-#: plugin.py:783
+#: plugin.py:799
 msgid "Filter this category..."
 msgstr "Filtra questa categoria..."
 
-#: plugin.py:923
+#: plugin.py:939
 msgid ""
 "Do you want to Convert to favorite .tv ?\n"
 "\n"
@@ -110,7 +110,7 @@ msgstr ""
 "Attenzione!! Potrebbe volerci del tempo a seconda\n"
 "sul numero di stream contenuti!!!"
 
-#: plugin.py:930
+#: plugin.py:946
 #, python-format
 msgid ""
 "bouquets reloaded..\n"
@@ -119,11 +119,11 @@ msgstr ""
 "liste canali ricaricata...\n"
 "Con %s canali"
 
-#: plugin.py:932
+#: plugin.py:948
 msgid "Download Error"
 msgstr "Errore Download"
 
-#: plugin.py:1219
+#: plugin.py:1274
 msgid "Please install SubSupport Plugins"
 msgstr "Si prega di installare i plugin SubSupport"
 

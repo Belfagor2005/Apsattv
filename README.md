@@ -1,8 +1,7 @@
-Apsattv 
+#   Apsattv  ![Plugin Apsattv](https://github.com/Belfagor2005/RadioGit/blob/main/usr/lib/enigma2/python/Plugins/Extensions/Apsattv/plugin.png?raw=true)
 
-![](https://komarev.com/ghpvc/?username=Belfagor2005)
+![![Python package](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml/badge.svg)](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml) ![](https://komarev.com/ghpvc/?username=Belfagor2005)
 
-<img src="https://github.com/Belfagor2005/Apsattv/blob/main/usr/lib/enigma2/python/Plugins/Extensions/Apsattv/plugin.png">
 
 Enigma2 project
 Only Free Channels ( no Pay Tv ) 

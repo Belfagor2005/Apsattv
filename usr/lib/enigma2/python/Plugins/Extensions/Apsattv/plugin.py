@@ -107,15 +107,16 @@ Panel_list = [('PLAYLISTS ONLINE')]
 
 screen_size = getDesktop(0).size()
 screen_width = screen_size.width()
-if screen_width > 1920:
-	skin_path = join(PLUGIN_PATH, 'skin/uhd')
-elif screen_width > 1280:
-	skin_path = join(PLUGIN_PATH, 'skin/fhd')
-else:
-	skin_path = PLUGIN_PATH + '/skin/hd'
 
-if exists('/usr/bin/apt-get'):
-	skin_path = join(skin_path, 'dreamOs')
+if screen_width > 1920:
+    skin_path = join(PLUGIN_PATH, "skin/uhd")
+elif screen_width >= 1280:
+    skin_path = join(PLUGIN_PATH, "skin/fhd")
+else:
+    skin_path = PLUGIN_PATH + "/skin/hd"
+
+if exists("/usr/bin/apt-get"):
+    skin_path = join(skin_path, "dreamOs")
 
 
 # log
@@ -636,15 +637,17 @@ class selectplay(Screen):
 			match = compile(regexcat, DOTALL).findall(content)
 
 			for name in match:
-				url = 'https://www.apsattv.com/' + name  # + '.m3u'
 				name = name.capitalize()
-				item = name + "###" + url + '\n'
+				url = "https://www.apsattv.com/" + name
+				item = name + "###" + url
 				items.append(item)
 
 			for item in sorted(items):
-				name, url = item.split('###')
-				self.menu_list.append(show_(name, url))
-
+				try:
+					name, url = item.split("###")
+					self.menu_list.append(show_(str(name), str(url)))
+				except Exception as e:
+					print("Error in menu item:", item, "-", e)
 			self['menulist'].l.setList(self.menu_list)
 			if self.menu_list:
 				auswahl = self['menulist'].getCurrent()[0][0]
@@ -869,9 +872,13 @@ class main2(Screen):
 					items.append(item)
 
 			items.sort()
-			for item in items:
-				name, url = item.split("###")
-				self.menu_list.append(show_(name, url))
+			for item in sorted(items):
+				try:
+					name, url = item.split("###")
+					self.menu_list.append(show_(str(name), str(url)))
+				except Exception as e:
+					print("Error in menu item:", item, "-", e)
+
 
 			self['menulist'].l.setList(self.menu_list)
 
@@ -1149,7 +1156,7 @@ class Playstream2(
 		self.item = item
 		self.itemscount = len(menu_list)
 		self.menu_list = menu_list
-		self.name = html_conv.html_unescape(name)
+		self.name = name
 		self.url = url.replace('%0a', '').replace('%0A', '')
 		self.state = self.STATE_PLAYING
 		self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()

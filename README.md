@@ -1,12 +1,17 @@
-# Apsattv ![Plugin Apsattv](https://github.com/Belfagor2005/Apsattv/blob/main/usr/lib/enigma2/python/Plugins/Extensions/Apsattv/plugin.png?raw=true)
+# 📺 Apsattv
 
-[![Python package](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml/badge.svg)](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml) ![](https://komarev.com/ghpvc/?username=Belfagor2005)
+<p align="center">
+  <img src="https://github.com/Belfagor2005/Apsattv/blob/main/usr/lib/enigma2/python/Plugins/Extensions/Apsattv/plugin.png?raw=true" height="120">
+</p>
+
+[![Python package](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml/badge.svg)](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml) 
+![](https://komarev.com/ghpvc/?username=Belfagor2005)
 
 ---
 
 ## About
 
-**Apsattv** is an Enigma2 plugin designed for seamless TV streaming experience.
+**Apsattv** is an **Enigma2 plugin** designed for a seamless TV streaming experience.
 
 ---
 

@@ -61,7 +61,7 @@ from Screens.VirtualKeyBoard import VirtualKeyBoard
 
 from Tools.Directories import SCOPE_PLUGINS, resolveFilename
 
-from . import _, host22, paypal
+from . import _, host22, paypal, __version__
 from .lib import Utils, html_conv
 from .lib.Console import Console as xConsole
 
@@ -93,11 +93,10 @@ else:
     from urllib2 import URLError, HTTPError
 
 
-currversion = '1.4'
 name_plugin = 'Apsattv Plugin'
 desc_plugin = (
     '..:: Apsat Tv International Channel List V. %s ::.. ' %
-    currversion)
+    __version__)
 PLUGIN_PATH = resolveFilename(SCOPE_PLUGINS, "Extensions/{}".format('Apsattv'))
 res_plugin_path = join(PLUGIN_PATH, 'skin')
 installer_url = 'aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0JlbGZhZ29yMjAwNS9BcHNhdHR2L21haW4vaW5zdGFsbGVyLnNo'
@@ -430,8 +429,8 @@ class Apsattv(Screen):
             return
         self.new_version = remote_version
         self.new_changelog = remote_changelog
-        # if float(currversion) < float(remote_version):
-        if currversion < remote_version:
+        # if float(__version__) < float(remote_version):
+        if __version__ < remote_version:
             self.Update = True
             self.session.open(
                 MessageBox,

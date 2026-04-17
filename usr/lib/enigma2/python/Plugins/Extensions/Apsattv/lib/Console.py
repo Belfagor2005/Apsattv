@@ -1,10 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # RAED & mfaraj57 &  (c) 2018
-# mod Lululla 20240720
+# mod Lululla 20260417
 
-from __future__ import print_function
-# from . import _
 from enigma import eConsoleAppContainer
 from Screens.Screen import Screen
 from Components.Label import Label
@@ -13,11 +11,6 @@ from Components.ScrollLabel import ScrollLabel
 
 from Screens.MessageBox import MessageBox
 from enigma import getDesktop
-import sys
-
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
 
 
 def getDesktopSize():
@@ -114,7 +107,7 @@ class Console(Screen):
         print('[Console] executing in run', self.run,
               ' the command:', self.cmdlist[self.run])
         print("[Console] Executing command:",
-              self.cmdlist[self.run])  # Aggiungi questo print
+              self.cmdlist[self.run])
         if self.container.execute(self.cmdlist[self.run]):
             self['text'].setText(self.cmdlist[self.run])
             self.runFinished(-1)
@@ -130,12 +123,6 @@ class Console(Screen):
         else:
             self.show()
             self.finished = True
-            """
-            try:
-                lastpage = self['text'].isAtLastPage()
-            except:
-                lastpage = self['text']
-            """
             if self.cancel_msg:
                 self.cancel_msg.close()
             if self.showStartStopText:
@@ -192,13 +179,11 @@ class Console(Screen):
         else:
             self.show()
 
-    def dataAvail(self, str):
-        if PY3:
-            data = str.decode()
-        else:
-            data = str
-        print("[Console] Data received: ", data)
-        self['text'].appendText(data)
+    def dataAvail(self, data_bytes):
+        # Python 3: data is bytes, decode to string
+        data_str = data_bytes.decode()
+        print("[Console] Data received: ", data_str)
+        self['text'].appendText(data_str)
 
     def restartenigma(self):
         from Screens.Standby import TryQuitMainloop

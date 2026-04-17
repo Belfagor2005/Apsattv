@@ -1,28 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-
-"""
-#########################################################
-#                                                       #
-#  Apsattv Plugin                                       #
-#  Version: 1.6                                         #
-#  Created by Lululla (https://github.com/Belfagor2005) #
-#  License: CC BY-NC-SA 4.0                             #
-#  https://creativecommons.org/licenses/by-nc-sa/4.0    #
-#  Last Modified: "09:25 - 20250514"                    #
-#                                                       #
-#  Credits:                                             #
-#  - Original concept by Lululla                        #
-#  Usage of this code without proper attribution        #
-#  is strictly prohibited.                              #
-#  For modifications and redistribution,                #
-#  please maintain this credit header.                  #
-#########################################################
-"""
-__author__ = "Lululla"
-
 from datetime import datetime
-
 from enigma import (
     RT_HALIGN_LEFT,
     RT_VALIGN_CENTER,
@@ -45,7 +22,8 @@ from os.path import exists, join, isfile, splitext
 from os import listdir, rename, remove, stat
 from json import loads
 from re import findall, DOTALL, compile, sub
-from sys import version_info
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
 from Plugins.Plugin import PluginDescriptor
 
 from Screens.InfoBarGenerics import (
@@ -65,6 +43,25 @@ from . import _, host22, paypal, __version__
 from .lib import Utils, html_conv
 from .lib.Console import Console as xConsole
 
+"""
+#########################################################
+#                                                       #
+#  Apsattv Plugin                                       #
+#  Created by Lululla (https://github.com/Belfagor2005) #
+#  License: CC BY-NC-SA 4.0                             #
+#  https://creativecommons.org/licenses/by-nc-sa/4.0    #
+#  Last Modified: "09:25 - 20250514"                    #
+#                                                       #
+#  Credits:                                             #
+#  - Original concept by Lululla                        #
+#  Usage of this code without proper attribution        #
+#  is strictly prohibited.                              #
+#  For modifications and redistribution,                #
+#  please maintain this credit header.                  #
+#########################################################
+"""
+__author__ = "Lululla"
+
 global skin_path, search, dowm3u
 
 
@@ -79,19 +76,6 @@ try:
     from os.path import isdir
 except ImportError:
     from os import isdir
-
-
-PY3 = version_info.major >= 3
-if PY3:
-    from urllib.request import urlopen, Request
-    from urllib.error import URLError, HTTPError
-    unicode = str
-    unichr = chr
-    long = int
-else:
-    from urllib2 import urlopen, Request
-    from urllib2 import URLError, HTTPError
-
 
 name_plugin = 'Apsattv Plugin'
 desc_plugin = (
@@ -309,7 +293,6 @@ def filter_channels(url, result, menu_list, show_):
             menu_list.append(show_(name, url))
 
         if menu_list:
-            # Adjust this to your specific widget or list reference
             auswahl = menu_list[0][0]
             return auswahl
         else:
@@ -362,7 +345,7 @@ class Apsattv(Screen):
                 'right': self.right,
                 'ok': self.ok,
                 'cancel': self.exitx,
-                'yellow': self.update_me,  # update_me,
+                'yellow': self.update_me,
                 'green': self.ok,
                 'yellow_long': self.update_dev,
                 'info_long': self.update_dev,
@@ -389,29 +372,11 @@ class Apsattv(Screen):
         remote_version = '0.0'
         remote_changelog = ''
         try:
-
-            def feth(url):
-                try:
-                    req = Request('http://example.com')
-                    response = urlopen(req)
-                    content = response.read()
-                    response.close()
-                    return content
-                except HTTPError as e:
-                    print('Errore HTTP: %s' % str(e))
-                except URLError as e:
-                    print('Errore URL: %s' % str(e))
-                except Exception as e:
-                    print('Errore generico: %s' % str(e))
-                return None
-
             req = Utils.Request(
                 Utils.b64decoder(installer_url), headers={
                     'User-Agent': 'Mozilla/5.0'})
             page = Utils.urlopen(req).read()
-            # data = page.decode("utf-8") if PY3 else page.encode("utf-8")
-            page = feth(installer_url)
-            data = page.decode("utf-8") if PY3 else page.encode("utf-8")
+            data = page.decode("utf-8")
             if data:
                 lines = data.split("\n")
                 for line in lines:
@@ -429,7 +394,6 @@ class Apsattv(Screen):
             return
         self.new_version = remote_version
         self.new_changelog = remote_changelog
-        # if float(__version__) < float(remote_version):
         if __version__ < remote_version:
             self.Update = True
             self.session.open(
@@ -809,7 +773,6 @@ class main2(Screen):
         self.loading_ok = False
         self.count = 0
         self.loading = 0
-        # self.selectplay = selectplay()
         self.name = namex
         self.url = lnk
         self.search = ''
@@ -868,7 +831,6 @@ class main2(Screen):
             title=_("Filter this category..."),
             text=self.search)
 
-    # use menultist for search
     def filterChannels(self, result):
         """
         Filter channels based on search result.
@@ -882,7 +844,6 @@ class main2(Screen):
             auswahl = filter_channels(self.url, result, self.menu_list, show_)
 
             if self.menu_list:
-                # auswahl = self['menulist'].getCurrent()[0][0]
                 self['name'].setText(str(auswahl))
             else:
                 self['name'].setText('No results found')
@@ -904,9 +865,6 @@ class main2(Screen):
         self.updateMenuList()
 
     def updateMenuList(self):
-        """
-        Update channel list by reading data from m3u URL and parsing it.
-        """
         self.menu_list = []
         items = []
         try:
@@ -1067,15 +1025,15 @@ class main2(Screen):
         if isfile(files):
             remove(files)
         url_m3u = self.url.strip()
-        if PY3:
-            url_m3u.encode()
-        import six
-        content = Utils.getUrl(url_m3u)
-        if six.PY3:
-            content = six.ensure_str(content)
+        # Python3: getUrl returns bytes, decode to str
+        content_bytes = Utils.getUrl(url_m3u)
+        if isinstance(content_bytes, bytes):
+            content = content_bytes.decode('utf-8')
+        else:
+            content = str(content_bytes)
+        # Write as bytes
         with open(files, 'wb') as f1:
-            f1.write(content.encode())
-            f1.close()
+            f1.write(content.encode('utf-8'))
         sleep(5)
         ch = 0
 
@@ -1087,25 +1045,26 @@ class main2(Screen):
                 with open('%s%s' % (enigma_path, bouquet_name), 'w') as outfile:
                     outfile.write('#NAME %s\r\n' % name_file.capitalize())
                     for line in open(files):
-                        if line.startswith(
-                                'http://') or line.startswith('https'):
+                        line_str = line.decode('utf-8') if isinstance(line, bytes) else line
+                        if line_str.startswith(
+                                'http://') or line_str.startswith('https'):
                             outfile.write(
                                 '#SERVICE %s:0:1:1:0:0:0:0:0:0:%s' %
-                                (service, line.replace(
+                                (service, line_str.replace(
                                     ':', '%3a')))
                             outfile.write('#DESCRIPTION %s' % desk_tmp)
-                        elif line.startswith('#EXTINF'):
-                            desk_tmp = '%s' % line.split(',')[-1]
-                        elif '<stream_url><![CDATA' in line:
+                        elif line_str.startswith('#EXTINF'):
+                            desk_tmp = '%s' % line_str.split(',')[-1]
+                        elif '<stream_url><![CDATA' in line_str:
                             outfile.write('#SERVICE %s:0:1:1:0:0:0:0:0:0:%s\r\n' % (
-                                service, line.split('[')[-1].split(']')[0].replace(':', '%3a')))
+                                service, line_str.split('[')[-1].split(']')[0].replace(':', '%3a')))
                             outfile.write('#DESCRIPTION %s\r\n' % desk_tmp)
-                        elif '<title>' in line:
-                            if '<![CDATA[' in line:
-                                desk_tmp = '%s\r\n' % line.split(
+                        elif '<title>' in line_str:
+                            if '<![CDATA[' in line_str:
+                                desk_tmp = '%s\r\n' % line_str.split(
                                     '[')[-1].split(']')[0]
                             else:
-                                desk_tmp = '%s\r\n' % line.split(
+                                desk_tmp = '%s\r\n' % line_str.split(
                                     '<')[1].split('>')[1]
                         ch += 1
                     outfile.close()
@@ -1176,7 +1135,6 @@ class TvInfoBarShowHide():
 
     def serviceStarted(self):
         if self.execing:
-            # if config.usage.show_infobar_on_zap.value:
             self.doShow()
 
     def startHideTimer(self):
@@ -1257,7 +1215,7 @@ class Playstream2(
         streaml = False
 
         self.stream_running = False
-        self.is_streaming = False  # Added here
+        self.is_streaming = False
         self.currentindex = index
 
         self.current_channel_index = index
@@ -1268,7 +1226,6 @@ class Playstream2(
         self.url = url.replace('%0a', '').replace('%0A', '')
         self.state = self.STATE_PLAYING
         self.srefInit = self.session.nav.getCurrentlyPlayingServiceReference()
-        """Initialize infobar components."""
         for x in (
             InfoBarBase,
             InfoBarMenu,
@@ -1351,17 +1308,16 @@ class Playstream2(
             return
 
         self.stream_running = True
-        self.is_streaming = True  # Added here
+        self.is_streaming = True
         self.cicleStreamType()
 
     def stopStream(self):
         if self.stream_running:
             self.stream_running = False
-            self.is_streaming = False  # Reset here as well
+            self.is_streaming = False
             print("Stream stopped and state reset.")
             self.session.nav.stopService()
             self.session.nav.playService(self.srefInit)
-            # Stop the refresh timer when the stream is stopped
             if hasattr(self, "refreshTimer") and self.refreshTimer:
                 self.refreshTimer.stop()
         else:
@@ -1459,14 +1415,14 @@ class Playstream2(
 
     def cancel(self):
         self.stream_running = False
-        self.is_streaming = False  # Reset here
+        self.is_streaming = False
 
         if isfile("/tmp/hls.avi"):
             remove("/tmp/hls.avi")
         self.session.nav.stopService()
         self.session.nav.playService(self.srefInit)
 
-        aspect_manager.restore_aspect()  # Restore aspect on exit
+        aspect_manager.restore_aspect()
         self.close()
 
     def leavePlayer(self):
@@ -1484,7 +1440,6 @@ def main(session, **kwargs):
 
 def Plugins(**kwargs):
     ico_path = 'plugin.png'
-    # extDescriptor = PluginDescriptor(name=name_plugin, description=desc_plugin, where=[PluginDescriptor.WHERE_EXTENSIONSMENU], icon=ico_path, fnc=main)
     result = [
         PluginDescriptor(
             name=name_plugin,
@@ -1492,5 +1447,4 @@ def Plugins(**kwargs):
             where=PluginDescriptor.WHERE_PLUGINMENU,
             icon=ico_path,
             fnc=main)]
-    # result.append(extDescriptor)
     return result

@@ -1,8 +1,8 @@
 #!/bin/bash
 ## setup command=wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/Apsattv/main/installer.sh -O - | /bin/sh
 
-version='1.3'
-changelog='Add ChannelUp / ChannelDown in Player - Fix major'
+version='1.5'
+changelog='Porting to python3'
 TMPPATH=/tmp/Apsattv-install
 FILEPATH=/tmp/Apsattv-main.tar.gz
 

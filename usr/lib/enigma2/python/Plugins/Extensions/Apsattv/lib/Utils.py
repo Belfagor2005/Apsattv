@@ -1174,7 +1174,13 @@ def charRemove(text):
     ]
     myreplace = text
     for ch in char:
-        myreplace = myreplace.replace(ch, '').replace('  ', ' ').replace('   ', ' ').strip()
+        myreplace = myreplace.replace(
+            ch,
+            '').replace(
+            '  ',
+            ' ').replace(
+            '   ',
+            ' ').strip()
     return myreplace
 
 

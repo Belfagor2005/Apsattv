@@ -1045,7 +1045,8 @@ class main2(Screen):
                 with open('%s%s' % (enigma_path, bouquet_name), 'w') as outfile:
                     outfile.write('#NAME %s\r\n' % name_file.capitalize())
                     for line in open(files):
-                        line_str = line.decode('utf-8') if isinstance(line, bytes) else line
+                        line_str = line.decode(
+                            'utf-8') if isinstance(line, bytes) else line
                         if line_str.startswith(
                                 'http://') or line_str.startswith('https'):
                             outfile.write(

@@ -171,7 +171,7 @@ def extract_xml_strings():
     # Remove duplicates
     seen = set()
     unique = []
-    for _, text in strings:
+    for x, text in strings:
         if text and text.strip():
             cleaned_text = text.strip()
             if cleaned_text not in seen:
@@ -226,7 +226,7 @@ def extract_python_strings():
 
         # Find all .py files
         py_files = []
-        for root_dir, _, files in os.walk(PLUGIN_DIR):
+        for root_dir, x, files in os.walk(PLUGIN_DIR):
             for f in files:
                 if f.endswith('.py') and not f.startswith('test_'):
                     py_files.append(os.path.join(root_dir, f))
@@ -388,8 +388,8 @@ def fix_po_file(po_file):
             if line.strip() == 'msgid ""' and i + \
                     1 < len(lines) and lines[i + 1].strip() == 'msgstr ""':
                 # Check if this is the header (should be only one)
-                if not any(l.strip().startswith('"Project-Id-Version:')
-                           for l in fixed_lines):
+                if not any(x.strip().startswith('"Project-Id-Version:')
+                           for x in fixed_lines):
                     # Keep header
                     fixed_lines.append(line)
                     fixed_lines.append(lines[i + 1])

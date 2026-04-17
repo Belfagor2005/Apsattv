@@ -100,9 +100,6 @@ elif screen_width >= 1280:
 else:
     skin_path = PLUGIN_PATH + "/skin/hd"
 
-if exists("/usr/bin/apt-get"):
-    skin_path = join(skin_path, "dreamOs")
-
 
 # log
 def trace_error():

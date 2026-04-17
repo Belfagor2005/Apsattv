@@ -1,113 +1,63 @@
-#, fuzzy
+# Apsattv translations
+# Copyright (C) 2025 Lululla Team
+# This file is distributed under the same license as the Lululla package.
+# [lululla] <ekekaz@gmail.com>, 2025.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Apsattv\n"
-"POT-Creation-Date: 2025-05-24 14:53+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
-"Language-Team: lululla\n"
-"Language: it\n"
+"Language-Team: ekekaz@gmail.com [lululla]\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.6\n"
-"X-Poedit-Basepath: ..\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-SearchPath-0: plugin.py\n"
 
-#: plugin.py:325 plugin.py:534
-msgid "Exit"
-msgstr ""
 
-#: plugin.py:327
-msgid "Update"
-msgstr ""
-
-#: plugin.py:405
-#, python-format
-msgid "Error checking version: %s"
-msgstr ""
-
-#: plugin.py:414
-#, python-format
-msgid ""
-"New version %s is available\n"
-"\n"
-"Changelog: %s\n"
-"\n"
-"Press info_long or yellow_long button to start force updating."
-msgstr ""
-
-#: plugin.py:421
-#, python-format
-msgid ""
-"New version %s is available.\n"
-"\n"
-"Changelog: %s\n"
-"\n"
-"Do you want to install it now?"
-msgstr ""
-
-#: plugin.py:423
-msgid "Congrats! You already have the latest version..."
-msgstr ""
-
-#: plugin.py:436
-#, python-format
-msgid "Do you want to install update ( %s ) now?"
-msgstr ""
-
-#: plugin.py:445
-msgid "Update Aborted!"
-msgstr ""
-
-#: plugin.py:535 plugin.py:576 plugin.py:754
-msgid "Search"
-msgstr ""
-
-#: plugin.py:537
-msgid "Remove Bouquet"
-msgstr ""
-
-#: plugin.py:698
-msgid "Remove all APSATTV Favorite Bouquet?"
-msgstr ""
-
-#: plugin.py:722
 msgid "APSATTV Favorites List have been removed"
 msgstr ""
 
-#: plugin.py:753
 msgid "Back"
 msgstr ""
 
-#: plugin.py:755
-msgid "Export"
+msgid "Congrats! You already have the latest version..."
 msgstr ""
 
-#: plugin.py:799
-msgid "Filter this category..."
+msgid "Do you want to install update ( %s ) now?"
 msgstr ""
 
-#: plugin.py:939
-msgid ""
-"Do you want to Convert to favorite .tv ?\n"
-"\n"
-"Attention!! It may take some time depending\n"
-"on the number of streams contained !!!"
-msgstr ""
-
-#: plugin.py:946
-#, python-format
-msgid ""
-"bouquets reloaded..\n"
-"With %s channel"
-msgstr ""
-
-#: plugin.py:948
 msgid "Download Error"
 msgstr ""
 
-#: plugin.py:1274
+msgid "Error checking version: %s"
+msgstr ""
+
+msgid "Exit"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Filter this category..."
+msgstr ""
+
 msgid "Please install SubSupport Plugins"
+msgstr ""
+
+msgid "Remove Bouquet"
+msgstr ""
+
+msgid "Remove all APSATTV Favorite Bouquet?"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Update"
+msgstr ""
+
+msgid "Update Aborted!"
 msgstr ""

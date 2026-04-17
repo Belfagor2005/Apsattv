@@ -1,140 +1,63 @@
+# Apsattv translations
+# Copyright (C) 2025 Lululla Team
+# This file is distributed under the same license as the Lululla package.
+# [lululla] <ekekaz@gmail.com>, 2025.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Apsattv\n"
-"POT-Creation-Date: 2025-05-24 14:53+0200\n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language-Team: lululla\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-04-17 20:37+0000\n"
+"Last-Translator:  <EMAIL@ADDRESS>\n"
+"Language-Team: Italian <tp@lists.linux.it>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.6\n"
-"X-Poedit-Basepath: ../../..\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-SearchPath-0: plugin.py\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: plugin.py:325 plugin.py:534
-msgid "Exit"
-msgstr "Esci"
-
-#: plugin.py:327
-msgid "Update"
-msgstr "Aggiorna"
-
-#: plugin.py:405
-#, python-format
-msgid "Error checking version: %s"
-msgstr "Errore durante il controllo della versione: %s"
-
-#: plugin.py:414
-#, python-format
-msgid ""
-"New version %s is available\n"
-"\n"
-"Changelog: %s\n"
-"\n"
-"Press info_long or yellow_long button to start force updating."
-msgstr ""
-"È disponibile la nuova versione %s\n"
-"\n"
-"Registro delle modifiche: %s\n"
-"\n"
-"Premere info_long o yellow_long pulsante per avviare l'aggiornamento forzato."
-
-#: plugin.py:421
-#, python-format
-msgid ""
-"New version %s is available.\n"
-"\n"
-"Changelog: %s\n"
-"\n"
-"Do you want to install it now?"
-msgstr ""
-"È disponibile la nuova versione %s.\n"
-"\n"
-"Changelog: %s\n"
-"\n"
-"Vuoi installarla ora?"
-
-#: plugin.py:423
-msgid "Congrats! You already have the latest version..."
-msgstr "Congratulazioni! Hai già l'ultima versione..."
-
-#: plugin.py:436
-#, python-format
-msgid "Do you want to install update ( %s ) now?"
-msgstr "Vuoi installare l'aggiornamento ( %s ) ora?"
-
-#: plugin.py:445
-msgid "Update Aborted!"
-msgstr "Aggiornamento Annullato!"
-
-#: plugin.py:535 plugin.py:576 plugin.py:754
-msgid "Search"
-msgstr "Cerca"
-
-#: plugin.py:537
-msgid "Remove Bouquet"
-msgstr "Rimuovi Bouquet"
-
-#: plugin.py:698
-msgid "Remove all APSATTV Favorite Bouquet?"
-msgstr "Rimuovere le liste canali favorite di APSATTV?"
-
-#: plugin.py:722
 msgid "APSATTV Favorites List have been removed"
-msgstr "Liste canali Favorite APSATTV rimosse"
+msgstr ""
 
-#: plugin.py:753
 msgid "Back"
-msgstr "Indietro"
-
-#: plugin.py:755
-msgid "Export"
-msgstr "Esporta"
-
-#: plugin.py:799
-msgid "Filter this category..."
-msgstr "Filtra questa categoria..."
-
-#: plugin.py:939
-msgid ""
-"Do you want to Convert to favorite .tv ?\n"
-"\n"
-"Attention!! It may take some time depending\n"
-"on the number of streams contained !!!"
 msgstr ""
-"Vuoi convertire in .tv preferito?\n"
-"\n"
-"Attenzione!! Potrebbe volerci del tempo a seconda\n"
-"sul numero di stream contenuti!!!"
 
-#: plugin.py:946
-#, python-format
-msgid ""
-"bouquets reloaded..\n"
-"With %s channel"
+msgid "Congrats! You already have the latest version..."
 msgstr ""
-"liste canali ricaricata...\n"
-"Con %s canali"
 
-#: plugin.py:948
+msgid "Do you want to install update ( %s ) now?"
+msgstr ""
+
 msgid "Download Error"
-msgstr "Errore Download"
+msgstr ""
 
-#: plugin.py:1274
+msgid "Error checking version: %s"
+msgstr ""
+
+msgid "Exit"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Filter this category..."
+msgstr ""
+
 msgid "Please install SubSupport Plugins"
-msgstr "Si prega di installare i plugin SubSupport"
+msgstr ""
 
-#~ msgid ""
-#~ "These streams may contain Adult content\n"
-#~ "\n"
-#~ "are you sure you want to continue??"
-#~ msgstr ""
-#~ "Questi flussi possono contenere contenuti per adulti\n"
-#~ "\n"
-#~ "sei sicuro di voler continuare??"
+msgid "Remove Bouquet"
+msgstr ""
 
-#~ msgid "bouquets reloaded.."
-#~ msgstr "bouquet ricaricati.."
+msgid "Remove all APSATTV Favorite Bouquet?"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Update"
+msgstr ""
+
+msgid "Update Aborted!"
+msgstr ""

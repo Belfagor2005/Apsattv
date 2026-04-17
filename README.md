@@ -3,11 +3,15 @@
 <p align="center">
   <img src="https://github.com/Belfagor2005/Apsattv/blob/main/usr/lib/enigma2/python/Plugins/Extensions/Apsattv/plugin.png?raw=true" height="120">
 </p>
-![](https://komarev.com/ghpvc/?username=Belfagor2005)
-![Version](https://img.shields.io/badge/version-1.5-blue)
-![Python](https://img.shields.io/badge/Python3-only-orange.svg)
-[![Python package](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml/badge.svg)](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml) 
 
+<p align="center">
+  <img src="https://komarev.com/ghpvc/?username=Belfagor2005" />
+  <img src="https://img.shields.io/badge/version-1.5-blue" />
+  <img src="https://img.shields.io/badge/Python-3--only-orange" />
+  <a href="https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml">
+    <img src="https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml/badge.svg" />
+  </a>
+</p>
 
 ---
 

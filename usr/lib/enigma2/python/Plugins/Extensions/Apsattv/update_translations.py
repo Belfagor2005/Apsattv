@@ -4,23 +4,39 @@ import os
 import re
 import subprocess
 from xml.etree import ElementTree as ET
-
 """
 ###########################################################
-Apsattv for Enigma2
+Plugin for Enigma2
 Created by: Lululla
 ###########################################################
-Last Updated: 2026-01-31
+Last Updated: 2026-04-19
 Credits: Lululla (modifications)
 Homepage: www.corvoboys.org
           www.linuxsat-support.com
 ###########################################################
 """
 
-PLUGIN_NAME = "Apsattv"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
-LOCALE_DIR = os.path.join(PLUGIN_DIR, "locale")
+PLUGIN_NAME = os.path.basename(PLUGIN_DIR)
+LOCALE_DIR = os.path.join(PLUGIN_DIR, "res", "locale")
+
+
+def get_locale_dir(plugin_dir):
+    candidates = [
+        os.path.join(plugin_dir, "locale"),         # es. /plugin/locale
+        os.path.join(plugin_dir, "res", "locale")   # es. /plugin/res/locale
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+    # default: verrà creata successivamente
+    return os.path.join(plugin_dir, "locale")
+
+
+LOCALE_DIR = get_locale_dir(PLUGIN_DIR)
 POT_FILE = os.path.join(LOCALE_DIR, "{}.pot".format(PLUGIN_NAME))
+
+
 STANDARD_LANGUAGES = [
     'af',         # Afrikaans
     'am',         # Amharic
@@ -171,7 +187,7 @@ def extract_xml_strings():
     # Remove duplicates
     seen = set()
     unique = []
-    for x, text in strings:
+    for _, text in strings:
         if text and text.strip():
             cleaned_text = text.strip()
             if cleaned_text not in seen:
@@ -226,7 +242,7 @@ def extract_python_strings():
 
         # Find all .py files
         py_files = []
-        for root_dir, x, files in os.walk(PLUGIN_DIR):
+        for root_dir, _, files in os.walk(PLUGIN_DIR):
             for f in files:
                 if f.endswith('.py') and not f.startswith('test_'):
                     py_files.append(os.path.join(root_dir, f))
@@ -388,8 +404,8 @@ def fix_po_file(po_file):
             if line.strip() == 'msgid ""' and i + \
                     1 < len(lines) and lines[i + 1].strip() == 'msgstr ""':
                 # Check if this is the header (should be only one)
-                if not any(x.strip().startswith('"Project-Id-Version:')
-                           for x in fixed_lines):
+                if not any(ls.strip().startswith('"Project-Id-Version:')
+                           for ls in fixed_lines):
                     # Keep header
                     fixed_lines.append(line)
                     fixed_lines.append(lines[i + 1])

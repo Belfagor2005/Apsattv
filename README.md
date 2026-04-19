@@ -1,4 +1,4 @@
-# 📺 Apsattv
+<h1 align="center">📺 Apsattv</h1>
 
 <p align="center">
   <img src="https://github.com/Belfagor2005/Apsattv/blob/main/usr/lib/enigma2/python/Plugins/Extensions/Apsattv/plugin.png?raw=true" height="120">

@@ -1,18 +1,15 @@
 <h1 align="center">📺 Apsattv</h1>
 
+![Visitors](https://komarev.com/ghpvc/?username=Belfagor2005&label=Repository%20Views&color=blueviolet)
+![Version](https://img.shields.io/badge/version-1.5-blue.svg)
+[![Enigma2](https://img.shields.io/badge/Enigma2-Plugin-ff6600.svg)](https://www.enigma2.net)
+[![Python](https://img.shields.io/badge/Python3--only-orange.svg)](https://www.python.org)
+[![Build](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml/badge.svg)](https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml)
+[![Donate](https://img.shields.io/badge/_-Donate-red.svg?logo=githubsponsors&labelColor=555555&style=for-the-badge)](https://ko-fi.com/lululla)
+
 <p align="center">
   <img src="https://github.com/Belfagor2005/Apsattv/blob/main/usr/lib/enigma2/python/Plugins/Extensions/Apsattv/plugin.png?raw=true" height="120">
 </p>
-
-<p align="center">
-  <img src="https://komarev.com/ghpvc/?username=Belfagor2005" />
-  <img src="https://img.shields.io/badge/version-1.5-blue" />
-  <img src="https://img.shields.io/badge/Python3--only-orange" />
-  <a href="https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml">
-    <img src="https://github.com/Belfagor2005/Apsattv/actions/workflows/pylint.yml/badge.svg" />
-  </a>
-</p>
-
 ---
 
 ## About
